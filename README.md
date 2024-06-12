@@ -76,7 +76,8 @@ tasks.register<SshRemoteExecutionTask>("remoteTasks") {
 <details>
 <summary>Different ways to configure remotes and commands</summary>
 
-Plugin supports typical options to create and configure objects in `remoteExecCommands` and `remotes` containers as well as some helper methods to lazily register them. 
+Plugin supports typical options to create and configure objects in `remoteExecCommands` and `remotes` containers as well
+as some helper methods to lazily register them.
 
 Fore people not familiar with Gradle's Kotlin DSL, here are some examples:
 
@@ -85,21 +86,21 @@ Fore people not familiar with Gradle's Kotlin DSL, here are some examples:
 
 // top level declaration, this object is lazily created and configured
 val bothCommands by remoteExecCommands.commandCollection(
-  remoteExecCommands.named("listFiles"),
-  remoteExecCommands.named("helloWorld")
+    remoteExecCommands.named("listFiles"),
+    remoteExecCommands.named("helloWorld")
 )
 
 // similar to the above, but for remotes, 
 // all those remotes will be lazily created and configured
 
 val remote1 by remotes.publicKeyAuthenticated {
-  host = "host1"
-  user = "user1"
+    host = "host1"
+    user = "user1"
 }
 
 val remote2 by remotes.publicKeyAuthenticated {
-  host = "host2"
-  user = "user2"
+    host = "host2"
+    user = "user2"
 }
 
 val bothRemotes by remotes.remoteCollection(remote1, remote2)
@@ -107,9 +108,9 @@ val bothRemotes by remotes.remoteCollection(remote1, remote2)
 // those top level declarations can be used in tasks configuration
 
 tasks.register<SshRemoteExecutionTask>("remoteTasks") {
-  remote = bothRemotes
-  command = bothCommands
-  appendRemoteNameToLines = true
+    remote = bothRemotes
+    command = bothCommands
+    appendRemoteNameToLines = true
 }
 ```
 
@@ -121,7 +122,7 @@ tasks.register<SshRemoteExecutionTask>("remoteTasks") {
 ./gradlew :remoteTasks
 ```
 
-<details open>
+<details>
 <summary>Output</summary>
 
 ```shell
