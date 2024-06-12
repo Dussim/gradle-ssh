@@ -2,7 +2,9 @@
 
 # Preface
 
-This plugin is in very early stages, there will be bugs, missing features and breaking changes.
+**This plugin is in very early stages, there will be bugs, missing features and breaking changes.**
+
+***This plugin is pending approval, it is not yet resolvable form Gradle Plugin Portal***
 
 ## Primer
 
