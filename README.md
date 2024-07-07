@@ -180,7 +180,7 @@ second-remote-username@second-remote-host:22|> config.json
 
 ## Changelog
 
-gradle-ssh 0.0.2
+### ***gradle-ssh 0.0.2***
 
 - **BREAKING CHANGES**:
     - all existing models properties are not `var` anymore but `Property<*>`
