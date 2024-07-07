@@ -101,7 +101,7 @@ tasks.register<SshRemoteExecutionTask>("remoteTasks") {
 
 tasks.register<ScpRemoteFileTask>("fileCommands") {
     remote = remotes["firstRemote"]
-    command = remoteFileCommands["fileCommands"]
+    command = remoteFileCommands["transfers"]
 }
 ```
 
