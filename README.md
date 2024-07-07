@@ -1,5 +1,7 @@
 # gradle-ssh - SSH plugin for Gradle
 
+### [Gradle Plugin Portal Link](https://plugins.gradle.org/plugin/xyz.dussim.gradle-ssh)
+
 # Preface
 
 **This plugin is in very early stages, there will be bugs, missing features and breaking changes.**
