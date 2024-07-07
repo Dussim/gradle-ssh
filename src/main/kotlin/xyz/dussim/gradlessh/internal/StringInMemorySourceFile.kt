@@ -15,13 +15,15 @@
  */
 package xyz.dussim.gradlessh.internal
 
-import xyz.dussim.gradlessh.tasks.exec.RemoteExecCommandString
-import javax.inject.Inject
+import net.schmizz.sshj.xfer.InMemorySourceFile
 
-internal abstract class RemoteExecCommandStringImpl
-    @Inject
-    constructor(
-        private val name: String,
-    ) : RemoteExecCommandString {
-        override fun getName(): String = name
-    }
+internal class StringInMemorySourceFile(
+    private val content: String,
+    private val fileName: String,
+) : InMemorySourceFile() {
+    override fun getLength(): Long = content.length.toLong()
+
+    override fun getInputStream() = content.byteInputStream()
+
+    override fun getName() = fileName
+}

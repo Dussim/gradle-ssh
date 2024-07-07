@@ -15,13 +15,16 @@
  */
 package xyz.dussim.gradlessh.internal
 
-import xyz.dussim.gradlessh.tasks.exec.RemoteExecCommandString
+import org.gradle.api.NamedDomainObjectSet
+import xyz.dussim.gradlessh.tasks.transfer.RemoteFileCommand
+import xyz.dussim.gradlessh.tasks.transfer.RemoteFileCommandCollection
 import javax.inject.Inject
 
-internal abstract class RemoteExecCommandStringImpl
+internal abstract class RemoteFileCommandCollectionImpl
     @Inject
     constructor(
         private val name: String,
-    ) : RemoteExecCommandString {
+        private val uploads: NamedDomainObjectSet<RemoteFileCommand>,
+    ) : RemoteFileCommandCollection, NamedDomainObjectSet<RemoteFileCommand> by uploads {
         override fun getName(): String = name
     }

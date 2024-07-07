@@ -16,18 +16,16 @@
 package xyz.dussim.gradlessh.internal
 
 import xyz.dussim.gradlessh.remote.PublicKeyAuthenticatedRemote
-import kotlin.properties.Delegates
+import javax.inject.Inject
 
-internal class PublicKeyAuthenticatedRemoteImpl(
-    private val name: String,
-) : PublicKeyAuthenticatedRemote {
-    override fun getName(): String = name
+internal abstract class PublicKeyAuthenticatedRemoteImpl
+    @Inject
+    constructor(
+        private val name: String,
+    ) : PublicKeyAuthenticatedRemote {
+        override fun getName(): String = name
 
-    override var host by Delegates.notNull<String>()
-    override var user by Delegates.notNull<String>()
-    override var port by Delegates.notNull<Int>()
-
-    override fun toString(): String {
-        return "PublicKeyAuthenticatedRemote[$user@$host:$port]"
+        override fun toString(): String {
+            return "PublicKeyAuthenticatedRemote[$user@$host:$port]"
+        }
     }
-}

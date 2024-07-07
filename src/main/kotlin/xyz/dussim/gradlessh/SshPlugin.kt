@@ -18,11 +18,10 @@ package xyz.dussim.gradlessh
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.add
-import org.gradle.kotlin.dsl.polymorphicDomainObjectContainer
-import xyz.dussim.gradlessh.remote.Remote
+import org.gradle.kotlin.dsl.newInstance
 import xyz.dussim.gradlessh.remote.RemoteContainer
-import xyz.dussim.gradlessh.tasks.exec.RemoteExecCommand
 import xyz.dussim.gradlessh.tasks.exec.RemoteExecCommandContainer
+import xyz.dussim.gradlessh.tasks.transfer.RemoteFileCommandContainer
 
 internal class SshPlugin : Plugin<Project> {
     override fun apply(target: Project): Unit =
@@ -30,20 +29,17 @@ internal class SshPlugin : Plugin<Project> {
             extensions.add(
                 publicType = RemoteContainer::class,
                 name = "remotes",
-                extension =
-                    RemoteContainer(
-                        objects.polymorphicDomainObjectContainer(Remote::class),
-                        target,
-                    ),
+                extension = objects.newInstance(),
             )
             extensions.add(
                 publicType = RemoteExecCommandContainer::class,
                 name = "remoteExecCommands",
-                extension =
-                    RemoteExecCommandContainer(
-                        objects.polymorphicDomainObjectContainer(RemoteExecCommand::class),
-                        target,
-                    ),
+                extension = objects.newInstance(),
+            )
+            extensions.add(
+                publicType = RemoteFileCommandContainer::class,
+                name = "remoteFileCommands",
+                extension = objects.newInstance(),
             )
         }
 }

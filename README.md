@@ -50,7 +50,12 @@ remotes {
 
     val bothRemotes by remoteCollection(firstRemote, secondRemote)
 }
+```
 
+### Configure remote executed commands
+
+```kotlin
+// build.gradle.kts
 remoteExecCommands {
     val listFiles by command {
         command = "ls"
@@ -64,7 +69,29 @@ remoteExecCommands {
 }
 ```
 
-### Configure task
+### Configure remote upload/download commands
+
+```kotlin
+// build.gradle.kts
+remoteFileCommands {
+    val downloadFile by downloadFileContent {
+        remotePath = "directory/file"
+        localFile = layout.projectDirectory.file("data/downloaded.txt").asFile
+    }
+
+    val upload by uploadFileContent {
+        localFile = layout.projectDirectory.file("data/payload.txt").asFile
+        remotePath = ""
+    }
+
+    val transfers by fileCommandCollection(
+        upload,
+        download,
+    )
+}
+```
+
+### Configure tasks
 
 ```kotlin
 // build.gradle.kts
@@ -72,6 +99,11 @@ tasks.register<SshRemoteExecutionTask>("remoteTasks") {
     remote = remotes["bothRemotes"]
     command = remoteExecCommands["bothCommands"]
     appendRemoteNameToLines = true
+}
+
+tasks.register<ScpRemoteFileTask>("fileCommands") {
+    remote = remotes["firstRemote"]
+    command = remoteFileCommands["fileCommands"]
 }
 ```
 
@@ -143,6 +175,20 @@ second-remote-username@second-remote-host:22|> config.json
 ## Future planned features
 
 - Ssh:
-    - download/upload files via sftp and scp
+    - ~~download/upload files via scp~~ done, use `ScpRemoteFileTask`
+    - download/upload files via sftp
 - Gradle:
     - implement missing features of [sshj](https://github.com/hierynomus/sshj) like custom key providers
+
+## Changelog
+
+gradle-ssh 0.0.2
+
+- **BREAKING CHANGES**:
+    - all existing models properties are not `var` anymore but `Property<*>`
+    - some of the methods in `RemoteContainer` and `RemoteExecCommandContainer` were marked as `@Deprecated` and will be
+      removed in `0.0.3`.
+      If you need that functionality it is not gone, it will just not be as nice to use, refer to
+      `PolymorphicDomainObjectContainer` docs.
+- Implemented `ScpRemoteFileTask` and way to define upload download commands via respectively `RemoteUploadCommand` and
+  `RemoteDownloadCommand`

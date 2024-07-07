@@ -15,13 +15,13 @@
  */
 package xyz.dussim.gradlessh.internal
 
-import xyz.dussim.gradlessh.tasks.exec.RemoteExecCommandString
+import xyz.dussim.gradlessh.tasks.transfer.RemoteUploadCommandString
 import javax.inject.Inject
 
-internal abstract class RemoteExecCommandStringImpl
+internal abstract class RemoteUploadCommandStringImpl
     @Inject
     constructor(
         private val name: String,
-    ) : RemoteExecCommandString {
+    ) : RemoteUploadCommandString {
         override fun getName(): String = name
     }

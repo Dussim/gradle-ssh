@@ -13,15 +13,14 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package xyz.dussim.gradlessh.internal
+package xyz.dussim.gradlessh.internal.extensions
 
-import xyz.dussim.gradlessh.tasks.exec.RemoteExecCommandString
-import javax.inject.Inject
+import org.gradle.api.model.ObjectFactory
 
-internal abstract class RemoteExecCommandStringImpl
-    @Inject
-    constructor(
-        private val name: String,
-    ) : RemoteExecCommandString {
-        override fun getName(): String = name
-    }
+internal inline fun <reified T> ObjectFactory.namedDomainObjectSet() = namedDomainObjectSet(T::class.java)
+
+internal inline fun <reified T> ObjectFactory.namedDomainObjectList() = namedDomainObjectList(T::class.java)
+
+internal inline fun <reified T> ObjectFactory.polymorphicDomainObjectContainer() = polymorphicDomainObjectContainer(T::class.java)
+
+internal inline fun <reified T> ObjectFactory.container() = polymorphicDomainObjectContainer<T>()

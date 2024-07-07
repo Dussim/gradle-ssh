@@ -17,12 +17,14 @@ package xyz.dussim.gradlessh.remote
 
 import org.gradle.api.Named
 import org.gradle.api.NamedDomainObjectSet
+import org.gradle.api.plugins.ExtensionAware
+import org.gradle.api.provider.Property
 import java.io.Serializable
 
 /**
  * Base interface for all [Remote] types. It does not hold any data by itself.
  */
-sealed interface Remote : Named, Serializable {
+sealed interface Remote : ExtensionAware, Named, Serializable {
     companion object
 }
 
@@ -35,22 +37,22 @@ sealed interface RemoteAddress {
     /**
      * Returns a formatted string with user, host, and port information.
      */
-    val address: String get() = "$user@$host:$port"
+    val address: String get() = "${user.get()}@${host.get()}:${port.get()}"
 
     /**
      * Holds the host/server information.
      */
-    val host: String
+    val host: Property<String>
 
     /**
      * Holds port information for the server.
      */
-    val port: Int
+    val port: Property<Int>
 
     /**
      * Holds user information for authentication.
      */
-    val user: String
+    val user: Property<String>
 }
 
 /**
@@ -60,14 +62,10 @@ sealed interface RemoteAddress {
 interface PasswordAuthenticatedRemote : Remote, RemoteAddress {
     companion object;
 
-    override var host: String
-    override var port: Int
-    override var user: String
-
     /**
      * User password for authentication.
      */
-    var password: String
+    var password: Property<String>
 }
 
 /**
@@ -77,15 +75,14 @@ interface PasswordAuthenticatedRemote : Remote, RemoteAddress {
  */
 interface PublicKeyAuthenticatedRemote : Remote, RemoteAddress {
     companion object;
-
-    override var host: String
-    override var port: Int
-    override var user: String
 }
 
 /**
  * This interface represents a set of [Remote] objects, possibly nested [RemoteCollection].
  * It extends [NamedDomainObjectSet] to provide a named collection of [Remote] objects.
+ *
+ * IMPORTANT NOTE: this [Set] implementation does not preserve insertion order,
+ * rather than iteration order is based on natural order of [Named.getName].
  */
 interface RemoteCollection : Remote, NamedDomainObjectSet<Remote> {
     companion object

@@ -17,14 +17,16 @@ package xyz.dussim.gradlessh.tasks.exec
 
 import org.gradle.api.ExtensiblePolymorphicDomainObjectContainer
 import org.gradle.api.NamedDomainObjectProvider
-import org.gradle.api.Project
-import org.gradle.api.provider.Provider
-import org.gradle.kotlin.dsl.RegisteringDomainObjectDelegateProviderWithTypeAndAction
-import org.gradle.kotlin.dsl.container
+import org.gradle.api.model.ObjectFactory
+import org.gradle.api.plugins.ExtensionAware
+import org.gradle.kotlin.dsl.newInstance
 import org.gradle.kotlin.dsl.register
 import org.gradle.kotlin.dsl.registering
 import xyz.dussim.gradlessh.internal.RemoteExecCommandCollectionImpl
 import xyz.dussim.gradlessh.internal.RemoteExecCommandStringImpl
+import xyz.dussim.gradlessh.internal.extensions.container
+import xyz.dussim.gradlessh.internal.extensions.namedDomainObjectSet
+import javax.inject.Inject
 
 /**
  * The [RemoteExecCommandContainer] class is a container
@@ -35,178 +37,134 @@ import xyz.dussim.gradlessh.internal.RemoteExecCommandStringImpl
  * @see RemoteExecCommandString
  * @see RemoteExecCommandCollection
  */
-class RemoteExecCommandContainer internal constructor(
-    private val container: ExtensiblePolymorphicDomainObjectContainer<RemoteExecCommand>,
-    project: Project,
-) : ExtensiblePolymorphicDomainObjectContainer<RemoteExecCommand> by container {
-    companion object;
+@Suppress("LeakingThis")
+abstract class RemoteExecCommandContainer
+    @Inject
+    constructor(
+        factory: ObjectFactory,
+    ) : ExtensiblePolymorphicDomainObjectContainer<RemoteExecCommand> by factory.container(), ExtensionAware {
+        companion object;
 
-    init {
-        container.registerFactory(RemoteExecCommandString::class.java) { name ->
-            RemoteExecCommandStringImpl(name = name)
+        init {
+            registerFactory(RemoteExecCommandString::class.java) { name ->
+                factory.newInstance<RemoteExecCommandStringImpl>(name)
+            }
+            registerFactory(RemoteExecCommandCollection::class.java) { name ->
+                factory.newInstance<RemoteExecCommandCollectionImpl>(
+                    name,
+                    factory.namedDomainObjectSet<RemoteExecCommand>(),
+                )
+            }
         }
-        container.registerFactory(RemoteExecCommandCollection::class.java) { name ->
-            RemoteExecCommandCollectionImpl(name = name, commands = project.container<RemoteExecCommand>())
+
+        /**
+         * Register a [RemoteExecCommandString] instance with the given [name] and [configuration].
+         * Instance is lazily created when needed.
+         *
+         * ```kotlin
+         * // name of this command will be string "differentName"
+         * val someCommand by remoteExecCommands.command("differentName") { /* configuration */ }
+         * ```
+         * @param name The name of the command.
+         * @param configuration The configuration of the command.
+         *
+         * @return The provider for the registered [RemoteExecCommandString].
+         * */
+        @Deprecated("Stick to kotlin by delegate")
+        fun command(
+            name: String,
+            configuration: RemoteExecCommandString.() -> Unit,
+        ): NamedDomainObjectProvider<RemoteExecCommandString> {
+            return register<RemoteExecCommandString>(name, configuration)
         }
-    }
 
-    /**
-     * Register a [RemoteExecCommandString] instance with the given [name] and [configuration].
-     * Instance is lazily created when needed.
-     *
-     * ```kotlin
-     * // name of this command will be string "differentName"
-     * val someCommand by remoteExecCommands.command("differentName") { /* configuration */ }
-     * ```
-     * @param name The name of the command.
-     * @param configuration The configuration of the command.
-     *
-     * @return The provider for the registered [RemoteExecCommandString].
-     * */
-    fun command(
-        name: String,
-        configuration: RemoteExecCommandString.() -> Unit,
-    ): NamedDomainObjectProvider<RemoteExecCommandString> {
-        return container.register<RemoteExecCommandString>(name, configuration)
-    }
+        /**
+         * Register a [RemoteExecCommandString] instance with the given [configuration].
+         * Instance is lazily created when needed.
+         *
+         * ```kotlin
+         * // name of this command will be string "someCommand"
+         * val someCommand by remoteExecCommands.command { /* configuration */ }
+         * ```
+         * @param configuration The configuration of the command.
+         *
+         * @return The registering provider for [RemoteExecCommandString].
+         * */
+        fun command(configuration: RemoteExecCommandString.() -> Unit) = registering(RemoteExecCommandString::class, configuration)
 
-    /**
-     * Register a [RemoteExecCommandString] instance with the given [configuration].
-     * Instance is lazily created when needed.
-     *
-     * ```kotlin
-     * // name of this command will be string "someCommand"
-     * val someCommand by remoteExecCommands.command { /* configuration */ }
-     * ```
-     * @param configuration The configuration of the command.
-     *
-     * @return The registering provider for [RemoteExecCommandString].
-     * */
-    fun command(
-        configuration: RemoteExecCommandString.() -> Unit,
-    ): RegisteringDomainObjectDelegateProviderWithTypeAndAction<out ExtensiblePolymorphicDomainObjectContainer<RemoteExecCommand>, RemoteExecCommandString> {
-        return container.registering(RemoteExecCommandString::class, configuration)
-    }
+        /**
+         * Register a [RemoteExecCommandCollection] instance with the given [name] and [configuration].
+         * Instance is lazily created when needed.
+         *
+         * ```kotlin
+         * // name of this command will be string "differentName"
+         * val someCommand by remoteExecCommands.commandCollection("differentName"){ /* configuration */ }
+         * ```
+         * @param name The name of the command.
+         * @param configuration The configuration of the command.
+         *
+         * @return The provider for the registered [RemoteExecCommandCollection].
+         * */
+        @Deprecated("Stick to kotlin by delegate")
+        fun commandCollection(
+            name: String,
+            configuration: RemoteExecCommandCollection.() -> Unit,
+        ): NamedDomainObjectProvider<RemoteExecCommandCollection> {
+            return register<RemoteExecCommandCollection>(name, configuration)
+        }
 
-    /**
-     * Register a [RemoteExecCommandCollection] instance with the given [name] and [configuration].
-     * Instance is lazily created when needed.
-     *
-     * ```kotlin
-     * // name of this command will be string "differentName"
-     * val someCommand by remoteExecCommands.commandCollection("differentName"){ /* configuration */ }
-     * ```
-     * @param name The name of the command.
-     * @param configuration The configuration of the command.
-     *
-     * @return The provider for the registered [RemoteExecCommandCollection].
-     * */
-    fun commandCollection(
-        name: String,
-        configuration: RemoteExecCommandCollection.() -> Unit,
-    ): NamedDomainObjectProvider<RemoteExecCommandCollection> {
-        return container.register<RemoteExecCommandCollection>(name, configuration)
-    }
+        /**
+         * Register a [RemoteExecCommandCollection] instance with the given [configuration].
+         * Instance is lazily created when needed.
+         *
+         * ```kotlin
+         * // name of this command will be string "someCommand"
+         * val someCommand by remoteExecCommands.commandCollection { /* configuration */ }
+         * ```
+         * @param configuration The configuration of the command.
+         *
+         * @return The registering provider for [RemoteExecCommandCollection].
+         * */
+        fun commandCollection(configuration: RemoteExecCommandCollection.() -> Unit) =
+            registering(RemoteExecCommandCollection::class, configuration)
 
-    /**
-     * Register a [RemoteExecCommandCollection] instance with the given [configuration].
-     * Instance is lazily created when needed.
-     *
-     * ```kotlin
-     * // name of this command will be string "someCommand"
-     * val someCommand by remoteExecCommands.commandCollection { /* configuration */ }
-     * ```
-     * @param configuration The configuration of the command.
-     *
-     * @return The registering provider for [RemoteExecCommandCollection].
-     * */
-    fun commandCollection(
-        configuration: RemoteExecCommandCollection.() -> Unit,
-    ): RegisteringDomainObjectDelegateProviderWithTypeAndAction<out ExtensiblePolymorphicDomainObjectContainer<RemoteExecCommand>, RemoteExecCommandCollection> {
-        return container.registering(RemoteExecCommandCollection::class, configuration)
-    }
+        /**
+         * Register a [RemoteExecCommand] instance with the given [name] and [command] instances.
+         * Instance is lazily created when needed.
+         *
+         * ```kotlin
+         * val command1: NamedDomainObjectProvider<RemoteExecCommand> = remoteExecCommands.command("someName1") { /* configuration */ }
+         * val command1: NamedDomainObjectProvider<RemoteExecCommand> = remoteExecCommands.command("someName2") { /* configuration */ }
+         * // name of this command will be string "differentName"
+         * val someCommand by remoteExecCommands.commandCollection("differentName", command1, command2)
+         * ```
+         * @param name The name of the command.
+         * @param command The [RemoteExecCommand] instance providers to lazily add to registered [RemoteExecCommandCollection].
+         *
+         * @return The provider for the registered [RemoteExecCommand].
+         * */
+        @Deprecated("Stick to kotlin by delegate")
+        fun commandCollection(
+            name: String,
+            vararg command: NamedDomainObjectProvider<out RemoteExecCommand>,
+        ): NamedDomainObjectProvider<RemoteExecCommandCollection> {
+            return commandCollection(name) { command.forEach(::addLater) }
+        }
 
-    /**
-     * Register a [RemoteExecCommand] instance with the given [name] and [command] instances.
-     * Instance is lazily created when needed.
-     *
-     * ```kotlin
-     * val command1: RemoteExecCommand= remoteExecCommands.getByName("someName1")
-     * val command1: RemoteExecCommand = remoteExecCommands.getByName("someName2")
-     * // name of this command will be string "differentName"
-     * val someCommand by remoteExecCommands.commandCollection("differentName", command1, command2)
-     * ```
-     * @param name The name of the command.
-     * @param command The [RemoteExecCommand] instances to eagerly add to registered [RemoteExecCommandCollection].
-     *
-     * @return The provider for the registered [RemoteExecCommand].
-     * */
-    fun commandCollection(
-        name: String,
-        vararg command: RemoteExecCommand,
-    ): NamedDomainObjectProvider<RemoteExecCommandCollection> {
-        return container.register<RemoteExecCommandCollection>(name) { this.addAll(command) }
+        /**
+         * Register a [RemoteExecCommand] instance with the given [command] instances.
+         * Instance is lazily created when needed.
+         *
+         * ```kotlin
+         * val command1: NamedDomainObjectProvider<RemoteExecCommand> = remoteExecCommands.command("someName1") { /* configuration */ }
+         * val command1: NamedDomainObjectProvider<RemoteExecCommand> = remoteExecCommands.command("someName2") { /* configuration */ }
+         * // name of this command will be string "someCommand"
+         * val someCommand by remoteExecCommands.commandCollection(command1, command2)
+         * ```
+         * @param command The [RemoteExecCommand] instance providers to lazily add to registered [RemoteExecCommandCollection].
+         *
+         * @return The provider for the registered [RemoteExecCommand].
+         * */
+        fun commandCollection(vararg command: NamedDomainObjectProvider<out RemoteExecCommand>) =
+            commandCollection { command.forEach(::addLater) }
     }
-
-    /**
-     * Register a [RemoteExecCommand] instance with the given [command] instances.
-     * Instance is lazily created when needed.
-     *
-     * ```kotlin
-     * val command1: RemoteExecCommand= remoteExecCommands.getByName("someName1")
-     * val command1: RemoteExecCommand = remoteExecCommands.getByName("someName2")
-     * // name of this command will be string "someCommand"
-     * val someCommand by remoteExecCommands.commandCollection(command1, command2)
-     * ```
-     * @param command The [RemoteExecCommand] instances to eagerly add to registered [RemoteExecCommandCollection].
-     *
-     * @return The registering provider for [RemoteExecCommandCollection].
-     * */
-    fun commandCollection(
-        vararg command: RemoteExecCommand,
-    ): RegisteringDomainObjectDelegateProviderWithTypeAndAction<out ExtensiblePolymorphicDomainObjectContainer<RemoteExecCommand>, RemoteExecCommandCollection> {
-        return commandCollection { this.addAll(command) }
-    }
-
-    /**
-     * Register a [RemoteExecCommand] instance with the given [name] and [command] instances.
-     * Instance is lazily created when needed.
-     *
-     * ```kotlin
-     * val command1: NamedDomainObjectProvider<RemoteExecCommand> = remoteExecCommands.command("someName1") { /* configuration */ }
-     * val command1: NamedDomainObjectProvider<RemoteExecCommand> = remoteExecCommands.command("someName2") { /* configuration */ }
-     * // name of this command will be string "differentName"
-     * val someCommand by remoteExecCommands.commandCollection("differentName", command1, command2)
-     * ```
-     * @param name The name of the command.
-     * @param command The [RemoteExecCommand] instance providers to lazily add to registered [RemoteExecCommandCollection].
-     *
-     * @return The provider for the registered [RemoteExecCommand].
-     * */
-    fun commandCollection(
-        name: String,
-        vararg command: Provider<out RemoteExecCommand>,
-    ): NamedDomainObjectProvider<RemoteExecCommandCollection> {
-        return commandCollection(name) { command.forEach(::addLater) }
-    }
-
-    /**
-     * Register a [RemoteExecCommand] instance with the given [command] instances.
-     * Instance is lazily created when needed.
-     *
-     * ```kotlin
-     * val command1: NamedDomainObjectProvider<RemoteExecCommand> = remoteExecCommands.command("someName1") { /* configuration */ }
-     * val command1: NamedDomainObjectProvider<RemoteExecCommand> = remoteExecCommands.command("someName2") { /* configuration */ }
-     * // name of this command will be string "someCommand"
-     * val someCommand by remoteExecCommands.commandCollection(command1, command2)
-     * ```
-     * @param command The [RemoteExecCommand] instance providers to lazily add to registered [RemoteExecCommandCollection].
-     *
-     * @return The provider for the registered [RemoteExecCommand].
-     * */
-    fun commandCollection(
-        vararg command: Provider<out RemoteExecCommand>,
-    ): RegisteringDomainObjectDelegateProviderWithTypeAndAction<out ExtensiblePolymorphicDomainObjectContainer<RemoteExecCommand>, RemoteExecCommandCollection> {
-        return commandCollection { command.forEach(::addLater) }
-    }
-}

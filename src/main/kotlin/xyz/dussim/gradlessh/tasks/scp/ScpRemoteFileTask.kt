@@ -13,29 +13,37 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package xyz.dussim.gradlessh.tasks.exec
+package xyz.dussim.gradlessh.tasks.scp
 
 import net.schmizz.sshj.SSHClient
-import net.schmizz.sshj.connection.channel.direct.Session
 import org.gradle.api.DefaultTask
 import org.gradle.api.provider.Property
 import org.gradle.api.tasks.Input
-import org.gradle.api.tasks.Optional
 import org.gradle.api.tasks.TaskAction
 import org.gradle.kotlin.dsl.support.useToRun
 import xyz.dussim.gradlessh.internal.connectAndAuthenticate
 import xyz.dussim.gradlessh.internal.flatten
+import xyz.dussim.gradlessh.internal.toDestFile
+import xyz.dussim.gradlessh.internal.toFileSource
 import xyz.dussim.gradlessh.remote.PasswordAuthenticatedRemote
 import xyz.dussim.gradlessh.remote.PublicKeyAuthenticatedRemote
 import xyz.dussim.gradlessh.remote.Remote
 import xyz.dussim.gradlessh.remote.RemoteAddress
 import xyz.dussim.gradlessh.remote.RemoteCollection
 import xyz.dussim.gradlessh.remote.RemoteContainer
+import xyz.dussim.gradlessh.tasks.transfer.DownloadFileContent
+import xyz.dussim.gradlessh.tasks.transfer.RemoteFileCommand
+import xyz.dussim.gradlessh.tasks.transfer.RemoteFileCommandCollection
+import xyz.dussim.gradlessh.tasks.transfer.RemoteFileCommandContainer
+import xyz.dussim.gradlessh.tasks.transfer.RemoteFileContent
+import xyz.dussim.gradlessh.tasks.transfer.UploadFileContent
 
 /**
- * Represents a task that executes a command on a remote machine via SSH.
- */
-abstract class SshRemoteExecutionTask : DefaultTask() {
+ * Represents a task that executes an upload/download command on a remote machine via SCP.
+ *
+ * @since 0.0.2
+ * */
+abstract class ScpRemoteFileTask : DefaultTask() {
     /**
      * Specifies the remote server to execute the commands via SSH.
      *
@@ -57,42 +65,27 @@ abstract class SshRemoteExecutionTask : DefaultTask() {
     abstract val remote: Property<Remote>
 
     /**
-     * Represents a property for the remote execution command.
+     * Represents a property for the remote file operation command.
      *
      * This property is used to specify the command to be executed in a remote server context.
      *
-     * In case a value is a [RemoteExecCommandCollection],
+     * In case a value is a [RemoteFileCommandCollection],
      * the task will execute all the commands recursively retrieved from the collection.
      *
      * @property command The remote execution command property.
      *
-     * @see RemoteExecCommand
-     * @see RemoteExecCommandString
-     * @see RemoteExecCommandCollection
-     * @see RemoteExecCommandContainer
+     * @see RemoteFileCommand
+     * @see UploadFileContent
+     * @see DownloadFileContent
+     * @see RemoteFileCommandCollection
+     * @see RemoteFileCommandContainer
      */
     @get:Input
-    abstract val command: Property<RemoteExecCommand>
-
-    /**
-     * A boolean property.
-     *
-     * When set to true, this property ensures that the name of the remote server is appended in the form of
-     * `user@host:port|>`
-     * to the lines of the standard output the command executed by the [SshRemoteExecutionTask].
-     *
-     * This might be helpful in scenarios where logs from multiple remote servers are being aggregated,
-     * and you would like to know which server's logs you are looking at.
-     *
-     * This property is [Optional] and defaults to `false`.
-     */
-    @get:Input
-    @get:Optional
-    abstract val appendRemoteNameToLines: Property<Boolean>
+    abstract val command: Property<RemoteFileCommand>
 
     init {
         group = "ssh"
-        description = "Executes a command on a remote machine via SSH"
+        description = "Uploads a file to a remote machine via SCP"
     }
 
     @TaskAction
@@ -103,6 +96,7 @@ abstract class SshRemoteExecutionTask : DefaultTask() {
         remotes.forEachIndexed { i, remote ->
             SSHClient().useToRun {
                 loadKnownHosts()
+                useCompression()
                 if (i > 0) {
                     println("-".repeat(20))
                 }
@@ -113,43 +107,25 @@ abstract class SshRemoteExecutionTask : DefaultTask() {
 
     private fun SSHClient.executeCommand(
         remoteAddress: RemoteAddress,
-        commands: Set<RemoteExecCommandString>,
+        files: Set<RemoteFileContent>,
     ) {
         remoteAddress.connectAndAuthenticate(this)
+        val scpFileTransfer = newSCPFileTransfer()
 
-        commands.forEach { command ->
-            command.commands.get().forEach { commandString ->
-                startSession().useToRun { execute(remoteAddress, commandString) }
+        files.forEach { file ->
+            when (file) {
+                is UploadFileContent ->
+                    scpFileTransfer.upload(
+                        file.toFileSource(),
+                        file.remotePath.get(),
+                    )
+
+                is DownloadFileContent ->
+                    scpFileTransfer.download(
+                        file.remotePath.get(),
+                        file.toDestFile(),
+                    )
             }
         }
     }
-
-    private fun Session.execute(
-        remoteAddress: RemoteAddress,
-        command: String,
-    ) {
-        val appendRemoteNameToLines = appendRemoteNameToLines.getOrElse(false)
-
-        val execCommand = exec(command)
-        execCommand.useToRun {
-            inputStream.bufferedReader().forEachLine {
-                if (appendRemoteNameToLines) {
-                    println("${remoteAddress.address}|> $it")
-                } else {
-                    println(it)
-                }
-            }
-        }
-        if (execCommand.exitStatus != 0) {
-            throw CommandExecutionException(execCommand)
-        }
-    }
-
-    private class CommandExecutionException(
-        execCommand: Session.Command,
-    ) : IllegalStateException(
-            "Command failed with exit status ${execCommand.exitStatus}\n" +
-                "ExitMessage: ${execCommand.exitErrorMessage}\n" +
-                "Error: ${execCommand.errorStream.bufferedReader().readText().trim()}",
-        )
 }

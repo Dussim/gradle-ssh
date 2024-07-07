@@ -15,6 +15,7 @@
  */
 package xyz.dussim.gradlessh.internal
 
+import org.gradle.api.provider.Provider
 import xyz.dussim.gradlessh.tasks.exec.RemoteExecCommand
 import xyz.dussim.gradlessh.tasks.exec.RemoteExecCommandCollection
 import xyz.dussim.gradlessh.tasks.exec.RemoteExecCommandString
@@ -24,4 +25,8 @@ internal fun RemoteExecCommand.flatten(): Set<RemoteExecCommandString> {
         is RemoteExecCommandCollection -> flatMapTo(mutableSetOf(), RemoteExecCommand::flatten)
         is RemoteExecCommandString -> setOf(this)
     }
+}
+
+internal fun Provider<out RemoteExecCommand>.flatten(): Set<RemoteExecCommandString> {
+    return get().flatten()
 }

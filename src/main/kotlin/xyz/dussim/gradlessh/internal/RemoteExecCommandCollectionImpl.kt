@@ -18,10 +18,13 @@ package xyz.dussim.gradlessh.internal
 import org.gradle.api.NamedDomainObjectSet
 import xyz.dussim.gradlessh.tasks.exec.RemoteExecCommand
 import xyz.dussim.gradlessh.tasks.exec.RemoteExecCommandCollection
+import javax.inject.Inject
 
-internal class RemoteExecCommandCollectionImpl(
-    private val name: String,
-    val commands: NamedDomainObjectSet<RemoteExecCommand>,
-) : RemoteExecCommandCollection, NamedDomainObjectSet<RemoteExecCommand> by commands {
-    override fun getName(): String = name
-}
+internal abstract class RemoteExecCommandCollectionImpl
+    @Inject
+    constructor(
+        private val name: String,
+        private val commands: NamedDomainObjectSet<RemoteExecCommand>,
+    ) : RemoteExecCommandCollection, NamedDomainObjectSet<RemoteExecCommand> by commands {
+        override fun getName(): String = name
+    }

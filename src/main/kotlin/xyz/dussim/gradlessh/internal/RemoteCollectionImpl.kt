@@ -18,10 +18,13 @@ package xyz.dussim.gradlessh.internal
 import org.gradle.api.NamedDomainObjectSet
 import xyz.dussim.gradlessh.remote.Remote
 import xyz.dussim.gradlessh.remote.RemoteCollection
+import javax.inject.Inject
 
-internal class RemoteCollectionImpl(
-    private val name: String,
-    val remotes: NamedDomainObjectSet<Remote>,
-) : RemoteCollection, NamedDomainObjectSet<Remote> by remotes {
-    override fun getName(): String = name
-}
+internal abstract class RemoteCollectionImpl
+    @Inject
+    constructor(
+        private val name: String,
+        private val remotes: NamedDomainObjectSet<Remote>,
+    ) : RemoteCollection, NamedDomainObjectSet<Remote> by remotes {
+        override fun getName(): String = name
+    }

@@ -16,19 +16,16 @@
 package xyz.dussim.gradlessh.internal
 
 import xyz.dussim.gradlessh.remote.PasswordAuthenticatedRemote
-import kotlin.properties.Delegates
+import javax.inject.Inject
 
-internal class PasswordAuthenticatedRemoteImpl(
-    private val name: String,
-) : PasswordAuthenticatedRemote {
-    override fun getName(): String = name
+internal abstract class PasswordAuthenticatedRemoteImpl
+    @Inject
+    constructor(
+        private val name: String,
+    ) : PasswordAuthenticatedRemote {
+        override fun getName(): String = name
 
-    override var host by Delegates.notNull<String>()
-    override var user by Delegates.notNull<String>()
-    override var port by Delegates.notNull<Int>()
-    override var password by Delegates.notNull<String>()
-
-    override fun toString(): String {
-        return "PasswordAuthenticatedRemote[$user@$host:$port]"
+        override fun toString(): String {
+            return "PasswordAuthenticatedRemote[$user@$host:$port]"
+        }
     }
-}

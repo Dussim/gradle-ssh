@@ -16,11 +16,21 @@
 package xyz.dussim.gradlessh.internal
 
 import net.schmizz.sshj.SSHClient
+import org.gradle.api.provider.Provider
 import xyz.dussim.gradlessh.remote.PasswordAuthenticatedRemote
 import xyz.dussim.gradlessh.remote.PublicKeyAuthenticatedRemote
 import xyz.dussim.gradlessh.remote.Remote
 import xyz.dussim.gradlessh.remote.RemoteAddress
 import xyz.dussim.gradlessh.remote.RemoteCollection
+
+internal val RemoteAddress.connectAndAuthenticate: SSHClient.() -> Unit
+    get() = {
+        connection()
+        authMethod()
+    }
+
+internal val RemoteAddress.connection: SSHClient.() -> Unit
+    get() = { connect(host.get(), port.get()) }
 
 internal val RemoteAddress.authMethod: SSHClient.() -> Unit
     get() =
@@ -30,14 +40,18 @@ internal val RemoteAddress.authMethod: SSHClient.() -> Unit
         }
 
 internal val PasswordAuthenticatedRemote.authMethod: SSHClient.() -> Unit
-    get() = { authPassword(user, password) }
+    get() = { authPassword(user.get(), password.get()) }
 
 internal val PublicKeyAuthenticatedRemote.authMethod: SSHClient.() -> Unit
-    get() = { authPublickey(user) }
+    get() = { authPublickey(user.get()) }
 
 internal fun Remote.flatten(): Set<RemoteAddress> {
     return when (this) {
         is RemoteCollection -> flatMapTo(mutableSetOf(), Remote::flatten)
         is RemoteAddress -> setOf(this)
     }
+}
+
+internal fun Provider<out Remote>.flatten(): Set<RemoteAddress> {
+    return get().flatten()
 }

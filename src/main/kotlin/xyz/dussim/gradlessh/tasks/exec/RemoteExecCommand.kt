@@ -17,13 +17,16 @@ package xyz.dussim.gradlessh.tasks.exec
 
 import org.gradle.api.Named
 import org.gradle.api.NamedDomainObjectSet
+import org.gradle.api.Task
+import org.gradle.api.plugins.ExtensionAware
+import org.gradle.api.provider.ListProperty
 import java.io.Serializable
 
 /**
  * This is a base interface for Remote Execution Commands,
  * representing a generic task to be executed in a remote server context.
  */
-sealed interface RemoteExecCommand : Named, Serializable {
+sealed interface RemoteExecCommand : ExtensionAware, Named, Serializable {
     companion object
 }
 
@@ -34,12 +37,21 @@ sealed interface RemoteExecCommand : Named, Serializable {
 interface RemoteExecCommandString : RemoteExecCommand {
     companion object
 
-    var command: String
+    val commands: ListProperty<String>
 }
 
 /**
  * This interface represents a set of [RemoteExecCommand] objects, possibly nested [RemoteExecCommandCollection].
  * It extends [NamedDomainObjectSet] to provide a named collection of [RemoteExecCommand] objects.
+ *
+ * IMPORTANT NOTE: this [Set] implementation does not preserve insertion order,
+ * rather than iteration order is based on natural order of [Named.getName].
+ *
+ * If you need specific commands run in order you either add more commands to [RemoteExecCommandString.commands] or
+ * declare separate tasks and use Gradle capabilities like [Task.dependsOn],
+ * [Task.finalizedBy], [Task.mustRunAfter] etc.
+ *
+ * IMPORTANT NOTE: I do not plan to replicate above Gradle capabilities in scope of [RemoteExecCommandCollection]
  */
 interface RemoteExecCommandCollection : RemoteExecCommand, NamedDomainObjectSet<RemoteExecCommand> {
     companion object
