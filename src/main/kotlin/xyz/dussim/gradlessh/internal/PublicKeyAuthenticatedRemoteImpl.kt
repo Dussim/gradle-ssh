@@ -25,7 +25,5 @@ internal abstract class PublicKeyAuthenticatedRemoteImpl
     ) : PublicKeyAuthenticatedRemote {
         override fun getName(): String = name
 
-        override fun toString(): String {
-            return "PublicKeyAuthenticatedRemote[$user@$host:$port]"
-        }
+        override fun toString(): String = "PublicKeyAuthenticatedRemote[$user@$host:$port]"
     }

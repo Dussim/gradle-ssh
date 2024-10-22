@@ -26,7 +26,10 @@ import java.io.Serializable
  * This is a base interface for Remote Execution Commands,
  * representing a generic task to be executed in a remote server context.
  */
-sealed interface RemoteExecCommand : ExtensionAware, Named, Serializable {
+sealed interface RemoteExecCommand :
+    ExtensionAware,
+    Named,
+    Serializable {
     companion object
 }
 
@@ -53,6 +56,8 @@ interface RemoteExecCommandString : RemoteExecCommand {
  *
  * IMPORTANT NOTE: I do not plan to replicate above Gradle capabilities in scope of [RemoteExecCommandCollection]
  */
-interface RemoteExecCommandCollection : RemoteExecCommand, NamedDomainObjectSet<RemoteExecCommand> {
+interface RemoteExecCommandCollection :
+    RemoteExecCommand,
+    NamedDomainObjectSet<RemoteExecCommand> {
     companion object
 }

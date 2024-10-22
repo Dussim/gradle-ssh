@@ -34,7 +34,8 @@ abstract class RemoteFileCommandContainer
     @Inject
     constructor(
         factory: ObjectFactory,
-    ) : ExtensiblePolymorphicDomainObjectContainer<RemoteFileCommand> by factory.container(), ExtensionAware {
+    ) : ExtensiblePolymorphicDomainObjectContainer<RemoteFileCommand> by factory.container(),
+        ExtensionAware {
         init {
             registerFactory(RemoteUploadCommandString::class.java) { name ->
                 factory.newInstance<RemoteUploadCommandStringImpl>(name)

@@ -39,7 +39,9 @@ sealed interface DownloadFileContent : RemoteFileContent {
  * This interface represents a [RemoteDownloadCommand] to specified local file path.
  * You can also set file from a path using extension function [setFromPath].
  * */
-interface RemoteDownloadCommandFile : RemoteDownloadCommand, DownloadFileContent {
+interface RemoteDownloadCommandFile :
+    RemoteDownloadCommand,
+    DownloadFileContent {
     companion object
 
     val localFile: Property<File>

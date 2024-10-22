@@ -25,6 +25,7 @@ internal abstract class RemoteCollectionImpl
     constructor(
         private val name: String,
         private val remotes: NamedDomainObjectSet<Remote>,
-    ) : RemoteCollection, NamedDomainObjectSet<Remote> by remotes {
+    ) : RemoteCollection,
+        NamedDomainObjectSet<Remote> by remotes {
         override fun getName(): String = name
     }

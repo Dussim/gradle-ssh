@@ -45,13 +45,10 @@ internal val PasswordAuthenticatedRemote.authMethod: SSHClient.() -> Unit
 internal val PublicKeyAuthenticatedRemote.authMethod: SSHClient.() -> Unit
     get() = { authPublickey(user.get()) }
 
-internal fun Remote.flatten(): Set<RemoteAddress> {
-    return when (this) {
+internal fun Remote.flatten(): Set<RemoteAddress> =
+    when (this) {
         is RemoteCollection -> flatMapTo(mutableSetOf(), Remote::flatten)
         is RemoteAddress -> setOf(this)
     }
-}
 
-internal fun Provider<out Remote>.flatten(): Set<RemoteAddress> {
-    return get().flatten()
-}
+internal fun Provider<out Remote>.flatten(): Set<RemoteAddress> = get().flatten()

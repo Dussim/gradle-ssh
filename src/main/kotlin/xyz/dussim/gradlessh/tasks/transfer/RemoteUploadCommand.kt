@@ -38,7 +38,9 @@ sealed interface UploadFileContent : RemoteFileContent {
 /**
  * This interface represents a [RemoteUploadCommand] to specified remote file path and a content of provided string.
  * */
-interface RemoteUploadCommandString : RemoteUploadCommand, UploadFileContent {
+interface RemoteUploadCommandString :
+    RemoteUploadCommand,
+    UploadFileContent {
     companion object
 
     val textContent: Property<String>
@@ -48,7 +50,9 @@ interface RemoteUploadCommandString : RemoteUploadCommand, UploadFileContent {
 /**
  * This interface represents a [RemoteUploadCommand] to specified remote file path and a content and name of provided local file.
  * */
-interface RemoteUploadCommandFile : RemoteUploadCommand, UploadFileContent {
+interface RemoteUploadCommandFile :
+    RemoteUploadCommand,
+    UploadFileContent {
     companion object
 
     val localFile: Property<File>

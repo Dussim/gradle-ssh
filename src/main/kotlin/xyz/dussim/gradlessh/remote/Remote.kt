@@ -24,7 +24,10 @@ import java.io.Serializable
 /**
  * Base interface for all [Remote] types. It does not hold any data by itself.
  */
-sealed interface Remote : ExtensionAware, Named, Serializable {
+sealed interface Remote :
+    ExtensionAware,
+    Named,
+    Serializable {
     companion object
 }
 
@@ -59,7 +62,9 @@ sealed interface RemoteAddress {
  * This interface represents a Remote that uses password authentication.
  * It holds essential server login details of [RemoteAddress] in addition to password.
  */
-interface PasswordAuthenticatedRemote : Remote, RemoteAddress {
+interface PasswordAuthenticatedRemote :
+    Remote,
+    RemoteAddress {
     companion object;
 
     /**
@@ -73,7 +78,9 @@ interface PasswordAuthenticatedRemote : Remote, RemoteAddress {
  * It holds essential server login details of [RemoteAddress].
  * It is assumed that the user has set up public key authentication on the server.
  */
-interface PublicKeyAuthenticatedRemote : Remote, RemoteAddress {
+interface PublicKeyAuthenticatedRemote :
+    Remote,
+    RemoteAddress {
     companion object;
 }
 
@@ -84,6 +91,8 @@ interface PublicKeyAuthenticatedRemote : Remote, RemoteAddress {
  * IMPORTANT NOTE: this [Set] implementation does not preserve insertion order,
  * rather than iteration order is based on natural order of [Named.getName].
  */
-interface RemoteCollection : Remote, NamedDomainObjectSet<Remote> {
+interface RemoteCollection :
+    Remote,
+    NamedDomainObjectSet<Remote> {
     companion object
 }

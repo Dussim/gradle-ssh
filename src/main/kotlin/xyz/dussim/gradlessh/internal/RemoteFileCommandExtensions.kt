@@ -28,43 +28,34 @@ import xyz.dussim.gradlessh.tasks.transfer.RemoteUploadCommandFile
 import xyz.dussim.gradlessh.tasks.transfer.RemoteUploadCommandString
 import xyz.dussim.gradlessh.tasks.transfer.UploadFileContent
 
-internal fun RemoteFileCommand.uploadsFlatten(): Set<UploadFileContent> {
-    return when (this) {
+internal fun RemoteFileCommand.uploadsFlatten(): Set<UploadFileContent> =
+    when (this) {
         is RemoteFileCommandCollection -> flatMapTo(mutableSetOf(), RemoteFileCommand::uploadsFlatten)
         is UploadFileContent -> setOf(this)
         is DownloadFileContent -> emptySet()
     }
-}
 
-internal fun Provider<out RemoteFileCommand>.uploadsFlatten(): Set<UploadFileContent> {
-    return get().uploadsFlatten()
-}
+internal fun Provider<out RemoteFileCommand>.uploadsFlatten(): Set<UploadFileContent> = get().uploadsFlatten()
 
-internal fun RemoteFileCommand.downloadsFlatten(): Set<DownloadFileContent> {
-    return when (this) {
+internal fun RemoteFileCommand.downloadsFlatten(): Set<DownloadFileContent> =
+    when (this) {
         is RemoteFileCommandCollection -> flatMapTo(mutableSetOf(), RemoteFileCommand::downloadsFlatten)
         is DownloadFileContent -> setOf(this)
         is UploadFileContent -> emptySet()
     }
-}
 
-internal fun Provider<out RemoteFileCommand>.downloadsFlatten(): Set<DownloadFileContent> {
-    return get().downloadsFlatten()
-}
+internal fun Provider<out RemoteFileCommand>.downloadsFlatten(): Set<DownloadFileContent> = get().downloadsFlatten()
 
-internal fun RemoteFileCommand.flatten(): Set<RemoteFileContent> {
-    return when (this) {
+internal fun RemoteFileCommand.flatten(): Set<RemoteFileContent> =
+    when (this) {
         is RemoteFileCommandCollection -> flatMapTo(mutableSetOf(), RemoteFileCommand::flatten)
         is RemoteFileContent -> setOf(this)
     }
-}
 
-internal fun Provider<out RemoteFileCommand>.flatten(): Set<RemoteFileContent> {
-    return get().flatten()
-}
+internal fun Provider<out RemoteFileCommand>.flatten(): Set<RemoteFileContent> = get().flatten()
 
-internal fun UploadFileContent.toFileSource(): LocalSourceFile {
-    return when (this) {
+internal fun UploadFileContent.toFileSource(): LocalSourceFile =
+    when (this) {
         is RemoteUploadCommandFile -> FileSystemFile(localFile.get())
         is RemoteUploadCommandString ->
             StringInMemorySourceFile(
@@ -72,10 +63,8 @@ internal fun UploadFileContent.toFileSource(): LocalSourceFile {
                 fileName = fileName.get(),
             )
     }
-}
 
-internal fun DownloadFileContent.toDestFile(): LocalDestFile {
-    return when (this) {
+internal fun DownloadFileContent.toDestFile(): LocalDestFile =
+    when (this) {
         is RemoteDownloadCommandFile -> FileSystemFile(localFile.get())
     }
-}

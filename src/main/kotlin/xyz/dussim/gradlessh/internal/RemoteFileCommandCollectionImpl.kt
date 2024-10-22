@@ -25,6 +25,7 @@ internal abstract class RemoteFileCommandCollectionImpl
     constructor(
         private val name: String,
         private val uploads: NamedDomainObjectSet<RemoteFileCommand>,
-    ) : RemoteFileCommandCollection, NamedDomainObjectSet<RemoteFileCommand> by uploads {
+    ) : RemoteFileCommandCollection,
+        NamedDomainObjectSet<RemoteFileCommand> by uploads {
         override fun getName(): String = name
     }

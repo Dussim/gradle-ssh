@@ -24,7 +24,10 @@ import java.io.Serializable
  * This is a base interface for Remote Upload/Download Commands,
  * representing a generic transfer task to be performed against a remote server.
  */
-sealed interface RemoteFileCommand : Named, ExtensionAware, Serializable
+sealed interface RemoteFileCommand :
+    Named,
+    ExtensionAware,
+    Serializable
 
 /**
  * Marker interface for interfaces that model actual data to upload/download.
@@ -39,6 +42,8 @@ sealed interface RemoteFileContent
  * rather than iteration order is based on natural order of [Named.getName].
  * All uploads and downloads should ideally be independent of each other.
  */
-interface RemoteFileCommandCollection : RemoteFileCommand, NamedDomainObjectSet<RemoteFileCommand> {
+interface RemoteFileCommandCollection :
+    RemoteFileCommand,
+    NamedDomainObjectSet<RemoteFileCommand> {
     companion object
 }

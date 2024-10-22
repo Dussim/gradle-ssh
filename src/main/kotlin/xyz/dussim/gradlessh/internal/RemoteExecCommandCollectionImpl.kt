@@ -25,6 +25,7 @@ internal abstract class RemoteExecCommandCollectionImpl
     constructor(
         private val name: String,
         private val commands: NamedDomainObjectSet<RemoteExecCommand>,
-    ) : RemoteExecCommandCollection, NamedDomainObjectSet<RemoteExecCommand> by commands {
+    ) : RemoteExecCommandCollection,
+        NamedDomainObjectSet<RemoteExecCommand> by commands {
         override fun getName(): String = name
     }

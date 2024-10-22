@@ -4,7 +4,7 @@
 
 # Preface
 
-**This plugin is in very early stages, there will be bugs, missing features and breaking changes.**
+**This plugin is in very early stages; there will be bugs, missing features and breaking changes.**
 
 ## Primer
 
@@ -26,7 +26,7 @@ It uses the [sshj](https://github.com/hierynomus/sshj) library to execute the co
 ```kotlin
 // build.gradle.kts
 plugins {
-    id("xyz.dussim.gradle-ssh").version("0.0.1")
+    id("xyz.dussim.gradle-ssh").version("0.0.3")
 }
 ```
 
@@ -113,7 +113,7 @@ tasks.register<ScpRemoteFileTask>("fileCommands") {
 Plugin supports typical options to create and configure objects in `remoteExecCommands` and `remotes` containers as well
 as some helper methods to lazily register them.
 
-Fore people not familiar with Gradle's Kotlin DSL, here are some examples:
+For people not familiar with Gradle's Kotlin DSL, here are some examples:
 
 ```kotlin
 // build.gradle.kts
@@ -172,7 +172,7 @@ second-remote-username@second-remote-host:22|> config.json
 
 </details>
 
-## Future planned features
+## Planned features
 
 - Ssh:
     - ~~download/upload files via scp~~ done, use `ScpRemoteFileTask`
@@ -181,6 +181,13 @@ second-remote-username@second-remote-host:22|> config.json
     - implement missing features of [sshj](https://github.com/hierynomus/sshj) like custom key providers
 
 ## Changelog
+
+### ***gradle-ssh 0.0.3***
+
+- **BREAKING CHANGES**:
+    - `@Deprecated` methods were removed
+- Dependencies updates:
+  - `com.hierynomus:sshj` from `0.38.0` to `0.39.0` 
 
 ### ***gradle-ssh 0.0.2***
 

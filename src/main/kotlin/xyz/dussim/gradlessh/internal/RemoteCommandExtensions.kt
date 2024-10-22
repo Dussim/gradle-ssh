@@ -20,13 +20,10 @@ import xyz.dussim.gradlessh.tasks.exec.RemoteExecCommand
 import xyz.dussim.gradlessh.tasks.exec.RemoteExecCommandCollection
 import xyz.dussim.gradlessh.tasks.exec.RemoteExecCommandString
 
-internal fun RemoteExecCommand.flatten(): Set<RemoteExecCommandString> {
-    return when (this) {
+internal fun RemoteExecCommand.flatten(): Set<RemoteExecCommandString> =
+    when (this) {
         is RemoteExecCommandCollection -> flatMapTo(mutableSetOf(), RemoteExecCommand::flatten)
         is RemoteExecCommandString -> setOf(this)
     }
-}
 
-internal fun Provider<out RemoteExecCommand>.flatten(): Set<RemoteExecCommandString> {
-    return get().flatten()
-}
+internal fun Provider<out RemoteExecCommand>.flatten(): Set<RemoteExecCommandString> = get().flatten()

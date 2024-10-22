@@ -25,7 +25,5 @@ internal abstract class PasswordAuthenticatedRemoteImpl
     ) : PasswordAuthenticatedRemote {
         override fun getName(): String = name
 
-        override fun toString(): String {
-            return "PasswordAuthenticatedRemote[$user@$host:$port]"
-        }
+        override fun toString(): String = "PasswordAuthenticatedRemote[$user@$host:$port]"
     }
