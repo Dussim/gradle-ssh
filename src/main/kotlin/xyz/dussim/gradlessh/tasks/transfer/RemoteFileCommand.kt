@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2024 Dussim (Artur Tuzim) <artur@tuzim.xzy>
+ * Copyright (C) 2025 Dussim (Artur Tuzim) <artur@tuzim.xzy>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,8 +39,10 @@ sealed interface RemoteFileContent
  * It extends [NamedDomainObjectSet] to provide a named collection of [RemoteFileCommand] objects.
  *
  * IMPORTANT NOTE: this [Set] implementation does not preserve insertion order,
- * rather than iteration order is based on natural order of [Named.getName].
- * All uploads and downloads should ideally be independent of each other.
+ * rather iteration order is based on the natural order of [Named.getName].
+ * If you need a specific sequence, prefer naming with numeric prefixes (e.g., 01_copy, 02_unpack)
+ * or split commands into multiple tasks to enforce order. All uploads and downloads
+ * should ideally be independent of each other.
  */
 interface RemoteFileCommandCollection :
     RemoteFileCommand,

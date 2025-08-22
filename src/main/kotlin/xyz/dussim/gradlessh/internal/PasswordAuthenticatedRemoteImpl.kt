@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2024 Dussim (Artur Tuzim) <artur@tuzim.xzy>
+ * Copyright (C) 2025 Dussim (Artur Tuzim) <artur@tuzim.xzy>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,5 +25,5 @@ internal abstract class PasswordAuthenticatedRemoteImpl
     ) : PasswordAuthenticatedRemote {
         override fun getName(): String = name
 
-        override fun toString(): String = "PasswordAuthenticatedRemote[$user@$host:$port]"
+        override fun toString(): String = "PasswordAuthenticatedRemote[$address]"
     }

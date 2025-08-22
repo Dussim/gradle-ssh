@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2024 Dussim (Artur Tuzim) <artur@tuzim.xzy>
+ * Copyright (C) 2025 Dussim (Artur Tuzim) <artur@tuzim.xzy>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -30,7 +30,11 @@ internal val RemoteAddress.connectAndAuthenticate: SSHClient.() -> Unit
     }
 
 internal val RemoteAddress.connection: SSHClient.() -> Unit
-    get() = { connect(host.get(), port.get()) }
+    get() = {
+        connectTimeout = connectionTimeout.get()
+        timeout = readTimeout.get()
+        connect(host.get(), port.get())
+    }
 
 internal val RemoteAddress.authMethod: SSHClient.() -> Unit
     get() =

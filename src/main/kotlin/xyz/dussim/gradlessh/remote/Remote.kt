@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2024 Dussim (Artur Tuzim) <artur@tuzim.xzy>
+ * Copyright (C) 2025 Dussim (Artur Tuzim) <artur@tuzim.xzy>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -56,6 +56,16 @@ sealed interface RemoteAddress {
      * Holds user information for authentication.
      */
     val user: Property<String>
+
+    /**
+     * Optional connection timeout in milliseconds. If not set, defaults to 10_000 ms.
+     */
+    val connectionTimeout: Property<Int>
+
+    /**
+     * Optional socket read timeout in milliseconds. If not set, defaults to 30_000 ms.
+     */
+    val readTimeout: Property<Int>
 }
 
 /**
@@ -70,7 +80,7 @@ interface PasswordAuthenticatedRemote :
     /**
      * User password for authentication.
      */
-    var password: Property<String>
+    val password: Property<String>
 }
 
 /**
@@ -88,8 +98,10 @@ interface PublicKeyAuthenticatedRemote :
  * This interface represents a set of [Remote] objects, possibly nested [RemoteCollection].
  * It extends [NamedDomainObjectSet] to provide a named collection of [Remote] objects.
  *
- * IMPORTANT NOTE: this [Set] implementation does not preserve insertion order,
- * rather than iteration order is based on natural order of [Named.getName].
+ * IMPORTANT NOTE: this [Set] implementation does not preserve insertion order;
+ * instead, iteration order is based on the natural order of [Named.getName].
+ * If you need a specific sequence, prefer names with numeric prefixes (e.g., 01_app, 02_db)
+ * or split remotes into multiple collections/tasks to enforce ordering.
  */
 interface RemoteCollection :
     Remote,

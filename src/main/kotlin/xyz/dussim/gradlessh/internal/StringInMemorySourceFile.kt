@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2024 Dussim (Artur Tuzim) <artur@tuzim.xzy>
+ * Copyright (C) 2025 Dussim (Artur Tuzim) <artur@tuzim.xzy>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -21,7 +21,7 @@ internal class StringInMemorySourceFile(
     private val content: String,
     private val fileName: String,
 ) : InMemorySourceFile() {
-    override fun getLength(): Long = content.length.toLong()
+    override fun getLength(): Long = content.toByteArray().size.toLong()
 
     override fun getInputStream() = content.byteInputStream()
 

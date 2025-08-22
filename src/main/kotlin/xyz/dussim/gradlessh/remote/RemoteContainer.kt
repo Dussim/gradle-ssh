@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2024 Dussim (Artur Tuzim) <artur@tuzim.xzy>
+ * Copyright (C) 2025 Dussim (Artur Tuzim) <artur@tuzim.xzy>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,9 +24,6 @@ import org.gradle.kotlin.dsl.registering
 import xyz.dussim.gradlessh.internal.PasswordAuthenticatedRemoteImpl
 import xyz.dussim.gradlessh.internal.PublicKeyAuthenticatedRemoteImpl
 import xyz.dussim.gradlessh.internal.RemoteCollectionImpl
-import xyz.dussim.gradlessh.internal.extensions.container
-import xyz.dussim.gradlessh.internal.extensions.namedDomainObjectSet
-import xyz.dussim.gradlessh.tasks.exec.RemoteExecCommand
 import javax.inject.Inject
 
 /**
@@ -44,21 +41,31 @@ abstract class RemoteContainer
     @Inject
     constructor(
         factory: ObjectFactory,
-    ) : ExtensiblePolymorphicDomainObjectContainer<Remote> by factory.container(),
+    ) : ExtensiblePolymorphicDomainObjectContainer<Remote> by factory.polymorphicDomainObjectContainer(Remote::class.java),
         ExtensionAware {
         companion object;
 
         init {
             registerFactory(PublicKeyAuthenticatedRemote::class.java) { name ->
-                factory.newInstance<PublicKeyAuthenticatedRemoteImpl>(name).apply { port.set(22) }
+                factory.newInstance<PublicKeyAuthenticatedRemoteImpl>(name).apply {
+                    port.convention(22)
+                    // Default timeouts
+                    connectionTimeout.convention(10_000)
+                    readTimeout.convention(30_000)
+                }
             }
             registerFactory(PasswordAuthenticatedRemote::class.java) { name ->
-                factory.newInstance<PasswordAuthenticatedRemoteImpl>(name).apply { port.set(22) }
+                factory.newInstance<PasswordAuthenticatedRemoteImpl>(name).apply {
+                    port.convention(22)
+                    // Default timeouts
+                    connectionTimeout.convention(10_000)
+                    readTimeout.convention(30_000)
+                }
             }
             registerFactory(RemoteCollection::class.java) { name ->
                 factory.newInstance<RemoteCollectionImpl>(
                     name,
-                    factory.namedDomainObjectSet<RemoteExecCommand>(),
+                    factory.namedDomainObjectSet(Remote::class.java),
                 )
             }
         }

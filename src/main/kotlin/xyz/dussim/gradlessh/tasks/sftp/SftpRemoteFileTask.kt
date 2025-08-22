@@ -13,7 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-package xyz.dussim.gradlessh.tasks.scp
+package xyz.dussim.gradlessh.tasks.sftp
 
 import net.schmizz.sshj.SSHClient
 import xyz.dussim.gradlessh.internal.connectAndAuthenticate
@@ -26,13 +26,13 @@ import xyz.dussim.gradlessh.tasks.transfer.RemoteFileContent
 import xyz.dussim.gradlessh.tasks.transfer.UploadFileContent
 
 /**
- * Represents a task that executes an upload/download command on a remote machine via SCP.
+ * Represents a task that executes an upload/download command on a remote machine via SFTP.
  *
- * @since 0.0.2
+ * @since 0.0.4
  * */
-abstract class ScpRemoteFileTask : AbstractRemoteFileTask() {
+abstract class SftpRemoteFileTask : AbstractRemoteFileTask() {
     init {
-        description = "Transfers files to/from a remote machine via SCP"
+        description = "Transfers files to/from a remote machine via SFTP"
     }
 
     override fun SSHClient.executeCommand(
@@ -40,21 +40,21 @@ abstract class ScpRemoteFileTask : AbstractRemoteFileTask() {
         files: Set<RemoteFileContent>,
     ) {
         remoteAddress.connectAndAuthenticate(this)
-        val scpFileTransfer = newSCPFileTransfer()
+        newSFTPClient().use { sftp ->
+            files.forEach { file ->
+                when (file) {
+                    is UploadFileContent ->
+                        sftp.put(
+                            file.toFileSource(),
+                            file.remotePath.get(),
+                        )
 
-        files.forEach { file ->
-            when (file) {
-                is UploadFileContent ->
-                    scpFileTransfer.upload(
-                        file.toFileSource(),
-                        file.remotePath.get(),
-                    )
-
-                is DownloadFileContent ->
-                    scpFileTransfer.download(
-                        file.remotePath.get(),
-                        file.toDestFile(),
-                    )
+                    is DownloadFileContent ->
+                        sftp.get(
+                            file.remotePath.get(),
+                            file.toDestFile(),
+                        )
+                }
             }
         }
     }

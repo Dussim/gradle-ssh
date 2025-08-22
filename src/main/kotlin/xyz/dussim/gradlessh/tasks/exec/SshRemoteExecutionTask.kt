@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2024 Dussim (Artur Tuzim) <artur@tuzim.xzy>
+ * Copyright (C) 2025 Dussim (Artur Tuzim) <artur@tuzim.xzy>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -103,6 +103,7 @@ abstract class SshRemoteExecutionTask : DefaultTask() {
         remotes.forEachIndexed { i, remote ->
             SSHClient().useToRun {
                 loadKnownHosts()
+                useCompression()
                 if (i > 0) {
                     println("-".repeat(20))
                 }
@@ -130,7 +131,8 @@ abstract class SshRemoteExecutionTask : DefaultTask() {
     ) {
         val appendRemoteNameToLines = appendRemoteNameToLines.getOrElse(false)
 
-        val execCommand = exec(command)
+        // Redirect stderr to stdout to prevent potential blocking on separate error stream buffers
+        val execCommand = exec("$command 2>&1")
         execCommand.useToRun {
             inputStream.bufferedReader().forEachLine {
                 if (appendRemoteNameToLines) {

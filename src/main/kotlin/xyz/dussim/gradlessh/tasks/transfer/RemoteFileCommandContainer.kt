@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2024 Dussim (Artur Tuzim) <artur@tuzim.xzy>
+ * Copyright (C) 2025 Dussim (Artur Tuzim) <artur@tuzim.xzy>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -25,8 +25,6 @@ import xyz.dussim.gradlessh.internal.RemoteDownloadCommandFileImpl
 import xyz.dussim.gradlessh.internal.RemoteFileCommandCollectionImpl
 import xyz.dussim.gradlessh.internal.RemoteUploadCommandFileImpl
 import xyz.dussim.gradlessh.internal.RemoteUploadCommandStringImpl
-import xyz.dussim.gradlessh.internal.extensions.container
-import xyz.dussim.gradlessh.internal.extensions.namedDomainObjectSet
 import javax.inject.Inject
 
 @Suppress("LeakingThis")
@@ -34,7 +32,9 @@ abstract class RemoteFileCommandContainer
     @Inject
     constructor(
         factory: ObjectFactory,
-    ) : ExtensiblePolymorphicDomainObjectContainer<RemoteFileCommand> by factory.container(),
+    ) : ExtensiblePolymorphicDomainObjectContainer<RemoteFileCommand> by factory.polymorphicDomainObjectContainer(
+            RemoteFileCommand::class.java,
+        ),
         ExtensionAware {
         init {
             registerFactory(RemoteUploadCommandString::class.java) { name ->
@@ -49,7 +49,7 @@ abstract class RemoteFileCommandContainer
             registerFactory(RemoteFileCommandCollection::class.java) { name ->
                 factory.newInstance<RemoteFileCommandCollectionImpl>(
                     name,
-                    factory.namedDomainObjectSet<RemoteFileCommand>(),
+                    factory.namedDomainObjectSet(RemoteFileCommand::class.java),
                 )
             }
         }

@@ -1,5 +1,5 @@
 /**
- * Copyright (C) 2024 Dussim (Artur Tuzim) <artur@tuzim.xzy>
+ * Copyright (C) 2025 Dussim (Artur Tuzim) <artur@tuzim.xzy>
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -23,8 +23,6 @@ import org.gradle.kotlin.dsl.newInstance
 import org.gradle.kotlin.dsl.registering
 import xyz.dussim.gradlessh.internal.RemoteExecCommandCollectionImpl
 import xyz.dussim.gradlessh.internal.RemoteExecCommandStringImpl
-import xyz.dussim.gradlessh.internal.extensions.container
-import xyz.dussim.gradlessh.internal.extensions.namedDomainObjectSet
 import javax.inject.Inject
 
 /**
@@ -41,7 +39,9 @@ abstract class RemoteExecCommandContainer
     @Inject
     constructor(
         factory: ObjectFactory,
-    ) : ExtensiblePolymorphicDomainObjectContainer<RemoteExecCommand> by factory.container(),
+    ) : ExtensiblePolymorphicDomainObjectContainer<RemoteExecCommand> by factory.polymorphicDomainObjectContainer(
+            RemoteExecCommand::class.java,
+        ),
         ExtensionAware {
         companion object;
 
@@ -52,7 +52,7 @@ abstract class RemoteExecCommandContainer
             registerFactory(RemoteExecCommandCollection::class.java) { name ->
                 factory.newInstance<RemoteExecCommandCollectionImpl>(
                     name,
-                    factory.namedDomainObjectSet<RemoteExecCommand>(),
+                    factory.namedDomainObjectSet(RemoteExecCommand::class.java),
                 )
             }
         }
