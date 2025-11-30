@@ -5,9 +5,9 @@ plugins {
     id("com.gradle.plugin-publish").version("1.3.1")
     id("com.github.hierynomus.license").version("0.16.1")
     id("ru.vyarus.github-info").version("2.0.0")
-    id("org.jmailen.kotlinter").version("5.2.0")
-    id("org.jetbrains.dokka").version("2.0.0")
-    id("com.github.ben-manes.versions").version("0.52.0")
+    id("org.jmailen.kotlinter").version("5.3.0")
+    id("org.jetbrains.dokka").version("2.1.0")
+    id("com.github.ben-manes.versions").version("0.53.0")
 }
 
 dependencies {
@@ -15,18 +15,18 @@ dependencies {
     implementation("com.jcraft:jzlib:1.1.3")
 
     testImplementation(gradleTestKit())
-    testImplementation(platform("org.junit:junit-bom:6.0.0-RC1"))
+    testImplementation(platform("org.junit:junit-bom:6.0.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation(kotlin("test"))
 }
 
 kotlin.compilerOptions {
-    jvmTarget.set(JVM_17)
+    jvmTarget = JVM_17
     freeCompilerArgs.add("-Xjdk-release=17")
 }
 
 tasks.withType<JavaCompile>().configureEach {
-    options.release.set(17)
+    options.release = 17
 }
 
 group = "xyz.dussim"
@@ -71,6 +71,10 @@ license {
 downloadLicenses {
     includeProjectDependencies = false
     dependencyConfiguration = "runtimeClasspath"
+}
+
+kotlinter {
+    ktlintVersion = "1.8.0"
 }
 
 tasks.wrapper {
