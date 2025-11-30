@@ -41,7 +41,7 @@ It uses the [sshj](https://github.com/hierynomus/sshj) library to execute the co
 ```kotlin
 // build.gradle.kts
 plugins {
-    id("xyz.dussim.gradle-ssh").version("0.0.4")
+    id("xyz.dussim.gradle-ssh").version("0.0.5")
 }
 ```
 
@@ -211,6 +211,10 @@ second-remote-username@second-remote-host:22|> config.json
     - Apply the same pattern to `user`, `port`, `password`, `remotePath`, `localFile`, etc.
 
 ## Changelog
+
+### ***gradle-ssh 0.0.5***
+
+- Libraries updated
 
 ### ***gradle-ssh 0.0.4***
 
