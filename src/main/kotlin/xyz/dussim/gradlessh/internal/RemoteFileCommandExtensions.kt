@@ -56,12 +56,16 @@ internal fun Provider<out RemoteFileCommand>.flatten(): Set<RemoteFileContent> =
 
 internal fun UploadFileContent.toFileSource(): LocalSourceFile =
     when (this) {
-        is RemoteUploadCommandFile -> FileSystemFile(localFile.get())
-        is RemoteUploadCommandString ->
+        is RemoteUploadCommandFile -> {
+            FileSystemFile(localFile.get())
+        }
+
+        is RemoteUploadCommandString -> {
             StringInMemorySourceFile(
                 content = textContent.get(),
                 fileName = fileName.get(),
             )
+        }
     }
 
 internal fun DownloadFileContent.toDestFile(): LocalDestFile =

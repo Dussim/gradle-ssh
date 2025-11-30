@@ -43,17 +43,19 @@ abstract class SftpRemoteFileTask : AbstractRemoteFileTask() {
         newSFTPClient().use { sftp ->
             files.forEach { file ->
                 when (file) {
-                    is UploadFileContent ->
+                    is UploadFileContent -> {
                         sftp.put(
                             file.toFileSource(),
                             file.remotePath.get(),
                         )
+                    }
 
-                    is DownloadFileContent ->
+                    is DownloadFileContent -> {
                         sftp.get(
                             file.remotePath.get(),
                             file.toDestFile(),
                         )
+                    }
                 }
             }
         }

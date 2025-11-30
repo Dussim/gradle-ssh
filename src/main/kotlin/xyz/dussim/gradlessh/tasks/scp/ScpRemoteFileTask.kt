@@ -44,17 +44,19 @@ abstract class ScpRemoteFileTask : AbstractRemoteFileTask() {
 
         files.forEach { file ->
             when (file) {
-                is UploadFileContent ->
+                is UploadFileContent -> {
                     scpFileTransfer.upload(
                         file.toFileSource(),
                         file.remotePath.get(),
                     )
+                }
 
-                is DownloadFileContent ->
+                is DownloadFileContent -> {
                     scpFileTransfer.download(
                         file.remotePath.get(),
                         file.toDestFile(),
                     )
+                }
             }
         }
     }

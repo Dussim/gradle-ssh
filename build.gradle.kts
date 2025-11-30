@@ -92,7 +92,7 @@ val formatAll = tasks.register<Task>("formatAll") {
 }
 
 tasks.publish {
-    dependsOn(formatAll)
+    dependsOn(formatAll, tasks.test)
 }
 
 //region dependencies
