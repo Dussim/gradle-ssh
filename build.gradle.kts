@@ -1,4 +1,5 @@
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_17
+import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
     `kotlin-dsl`
@@ -23,6 +24,8 @@ dependencies {
 kotlin.compilerOptions {
     jvmTarget = JVM_17
     freeCompilerArgs.add("-Xjdk-release=17")
+    apiVersion = KotlinVersion.KOTLIN_2_2
+    languageVersion = KotlinVersion.KOTLIN_2_2
 }
 
 tasks.withType<JavaCompile>().configureEach {

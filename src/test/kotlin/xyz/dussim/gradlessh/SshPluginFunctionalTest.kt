@@ -19,13 +19,21 @@ import org.gradle.testkit.runner.GradleRunner
 import org.gradle.testkit.runner.TaskOutcome
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertTrue
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.ValueSource
 import java.io.File
 
+@Retention(AnnotationRetention.RUNTIME)
+@Target(AnnotationTarget.FUNCTION)
+@ParameterizedTest(name = "gradle {0}")
+@ValueSource(strings = ["9.0.0", "9.1.0", "9.2.1", "9.3.1", "9.4.1", "9.5.0", "9.6.1"])
+annotation class GradleVersionsTest
+
 class SshPluginFunctionalTest {
-    @Test
+    @GradleVersionsTest
     fun `plugin applies and registers extensions`(
+        gradleVersion: String,
         @TempDir tempDir: File,
     ) {
         // Given a minimal settings and build file applying our plugin
@@ -58,9 +66,10 @@ class SshPluginFunctionalTest {
         val result =
             GradleRunner
                 .create()
+                .withGradleVersion(gradleVersion)
                 .withProjectDir(tempDir)
                 .withPluginClasspath()
-                .withArguments("verifyExtensions", "--stacktrace")
+                .withArguments("verifyExtensions", "--stacktrace", "--warning-mode=fail")
                 .build()
 
         // Then
@@ -68,8 +77,9 @@ class SshPluginFunctionalTest {
         assertTrue(result.output.contains("[TEST] EXTENSIONS_OK"))
     }
 
-    @Test
+    @GradleVersionsTest
     fun `plugin DSL can configure remotes and commands without executing`(
+        gradleVersion: String,
         @TempDir tempDir: File,
     ) {
         // Ensure plugin config DSL compiles and config phase runs without errors
@@ -114,17 +124,19 @@ class SshPluginFunctionalTest {
         val result =
             GradleRunner
                 .create()
+                .withGradleVersion(gradleVersion)
                 .withProjectDir(tempDir)
                 .withPluginClasspath()
-                .withArguments("verifyDsl", "--stacktrace")
+                .withArguments("verifyDsl", "--stacktrace", "--warning-mode=fail")
                 .build()
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":verifyDsl")?.outcome)
         assertTrue(result.output.contains("[TEST] DSL_OK"))
     }
 
-    @Test
+    @GradleVersionsTest
     fun `remote defaults and address formatting`(
+        gradleVersion: String,
         @TempDir tempDir: File,
     ) {
         writeFile(
@@ -163,17 +175,19 @@ class SshPluginFunctionalTest {
         val result =
             GradleRunner
                 .create()
+                .withGradleVersion(gradleVersion)
                 .withProjectDir(tempDir)
                 .withPluginClasspath()
-                .withArguments("verifyRemoteDefaults", "--stacktrace")
+                .withArguments("verifyRemoteDefaults", "--stacktrace", "--warning-mode=fail")
                 .build()
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":verifyRemoteDefaults")?.outcome)
         assertTrue(result.output.contains("[TEST] REMOTE_DEFAULTS_OK"))
     }
 
-    @Test
+    @GradleVersionsTest
     fun `create remote collection with multiple remotes`(
+        gradleVersion: String,
         @TempDir tempDir: File,
     ) {
         writeFile(
@@ -216,17 +230,19 @@ class SshPluginFunctionalTest {
         val result =
             GradleRunner
                 .create()
+                .withGradleVersion(gradleVersion)
                 .withProjectDir(tempDir)
                 .withPluginClasspath()
-                .withArguments("verifyRemoteCollection", "--stacktrace")
+                .withArguments("verifyRemoteCollection", "--stacktrace", "--warning-mode=fail")
                 .build()
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":verifyRemoteCollection")?.outcome)
         assertTrue(result.output.contains("[TEST] REMOTE_COLLECTION_OK"))
     }
 
-    @Test
+    @GradleVersionsTest
     fun `exec command collection with multiple commands`(
+        gradleVersion: String,
         @TempDir tempDir: File,
     ) {
         writeFile(
@@ -267,17 +283,19 @@ class SshPluginFunctionalTest {
         val result =
             GradleRunner
                 .create()
+                .withGradleVersion(gradleVersion)
                 .withProjectDir(tempDir)
                 .withPluginClasspath()
-                .withArguments("verifyExecCollection", "--stacktrace")
+                .withArguments("verifyExecCollection", "--stacktrace", "--warning-mode=fail")
                 .build()
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":verifyExecCollection")?.outcome)
         assertTrue(result.output.contains("[TEST] EXEC_COLLECTION_OK"))
     }
 
-    @Test
+    @GradleVersionsTest
     fun `file command container upload download and collection`(
+        gradleVersion: String,
         @TempDir tempDir: File,
     ) {
         writeFile(
@@ -338,17 +356,19 @@ class SshPluginFunctionalTest {
         val result =
             GradleRunner
                 .create()
+                .withGradleVersion(gradleVersion)
                 .withProjectDir(tempDir)
                 .withPluginClasspath()
-                .withArguments("verifyFileCommands", "--stacktrace")
+                .withArguments("verifyFileCommands", "--stacktrace", "--warning-mode=fail")
                 .build()
 
         assertEquals(TaskOutcome.SUCCESS, result.task(":verifyFileCommands")?.outcome)
         assertTrue(result.output.contains("[TEST] FILE_COMMANDS_OK"))
     }
 
-    @Test
+    @GradleVersionsTest
     fun `configuration cache is reusable with plugin exec task (skipped)`(
+        gradleVersion: String,
         @TempDir tempDir: File,
     ) {
         // Given a project with our plugin and an SshRemoteExecutionTask that is skipped at execution time
@@ -409,9 +429,10 @@ class SshPluginFunctionalTest {
         val first =
             GradleRunner
                 .create()
+                .withGradleVersion(gradleVersion)
                 .withProjectDir(tempDir)
                 .withPluginClasspath()
-                .withArguments("runAll", "--configuration-cache", "--stacktrace")
+                .withArguments("runAll", "--configuration-cache", "--stacktrace", "--warning-mode=fail")
                 .build()
 
         assertEquals(TaskOutcome.SUCCESS, first.task(":runAll")?.outcome)
@@ -425,9 +446,10 @@ class SshPluginFunctionalTest {
         val second =
             GradleRunner
                 .create()
+                .withGradleVersion(gradleVersion)
                 .withProjectDir(tempDir)
                 .withPluginClasspath()
-                .withArguments("runAll", "--configuration-cache", "--stacktrace")
+                .withArguments("runAll", "--configuration-cache", "--stacktrace", "--warning-mode=fail")
                 .build()
 
         assertEquals(TaskOutcome.SUCCESS, second.task(":runAll")?.outcome)
@@ -438,8 +460,9 @@ class SshPluginFunctionalTest {
         )
     }
 
-    @Test
+    @GradleVersionsTest
     fun `configuration cache is reusable with plugin file task (skipped)`(
+        gradleVersion: String,
         @TempDir tempDir: File,
     ) {
         // Given a project with our plugin and an SftpRemoteFileTask that is skipped at execution time
@@ -502,9 +525,10 @@ class SshPluginFunctionalTest {
         val first =
             GradleRunner
                 .create()
+                .withGradleVersion(gradleVersion)
                 .withProjectDir(tempDir)
                 .withPluginClasspath()
-                .withArguments("runTransfers", "--configuration-cache", "--stacktrace")
+                .withArguments("runTransfers", "--configuration-cache", "--stacktrace", "--warning-mode=fail")
                 .build()
 
         assertEquals(TaskOutcome.SUCCESS, first.task(":runTransfers")?.outcome)
@@ -518,9 +542,10 @@ class SshPluginFunctionalTest {
         val second =
             GradleRunner
                 .create()
+                .withGradleVersion(gradleVersion)
                 .withProjectDir(tempDir)
                 .withPluginClasspath()
-                .withArguments("runTransfers", "--configuration-cache", "--stacktrace")
+                .withArguments("runTransfers", "--configuration-cache", "--stacktrace", "--warning-mode=fail")
                 .build()
 
         assertEquals(TaskOutcome.SUCCESS, second.task(":runTransfers")?.outcome)
