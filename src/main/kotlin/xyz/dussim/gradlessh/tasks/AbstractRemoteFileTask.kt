@@ -50,7 +50,6 @@ abstract class AbstractRemoteFileTask : DefaultTask() {
      * @see xyz.dussim.gradlessh.remote.PublicKeyAuthenticatedRemote
      * @see xyz.dussim.gradlessh.remote.PasswordAuthenticatedRemote
      * @see xyz.dussim.gradlessh.remote.RemoteCollection
-     * @see xyz.dussim.gradlessh.remote.RemoteContainer
      */
     @get:Input
     abstract val remote: Property<Remote>
@@ -69,7 +68,6 @@ abstract class AbstractRemoteFileTask : DefaultTask() {
      * @see xyz.dussim.gradlessh.tasks.transfer.UploadFileContent
      * @see xyz.dussim.gradlessh.tasks.transfer.DownloadFileContent
      * @see xyz.dussim.gradlessh.tasks.transfer.RemoteFileCommandCollection
-     * @see xyz.dussim.gradlessh.tasks.transfer.RemoteFileCommandContainer
      */
     @get:Input
     abstract val command: Property<RemoteFileCommand>

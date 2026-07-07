@@ -15,31 +15,101 @@
  */
 package xyz.dussim.gradlessh
 
+import org.gradle.api.ExtensiblePolymorphicDomainObjectContainer
 import org.gradle.api.Plugin
 import org.gradle.api.Project
 import org.gradle.kotlin.dsl.add
 import org.gradle.kotlin.dsl.newInstance
-import xyz.dussim.gradlessh.remote.RemoteContainer
-import xyz.dussim.gradlessh.tasks.exec.RemoteExecCommandContainer
-import xyz.dussim.gradlessh.tasks.transfer.RemoteFileCommandContainer
+import xyz.dussim.gradlessh.internal.PasswordAuthenticatedRemoteImpl
+import xyz.dussim.gradlessh.internal.PublicKeyAuthenticatedRemoteImpl
+import xyz.dussim.gradlessh.internal.RemoteCollectionImpl
+import xyz.dussim.gradlessh.internal.RemoteDownloadCommandFileImpl
+import xyz.dussim.gradlessh.internal.RemoteExecCommandCollectionImpl
+import xyz.dussim.gradlessh.internal.RemoteExecCommandStringImpl
+import xyz.dussim.gradlessh.internal.RemoteFileCommandCollectionImpl
+import xyz.dussim.gradlessh.internal.RemoteUploadCommandFileImpl
+import xyz.dussim.gradlessh.internal.RemoteUploadCommandStringImpl
+import xyz.dussim.gradlessh.remote.PasswordAuthenticatedRemote
+import xyz.dussim.gradlessh.remote.PublicKeyAuthenticatedRemote
+import xyz.dussim.gradlessh.remote.Remote
+import xyz.dussim.gradlessh.remote.RemoteCollection
+import xyz.dussim.gradlessh.tasks.exec.RemoteExecCommand
+import xyz.dussim.gradlessh.tasks.exec.RemoteExecCommandCollection
+import xyz.dussim.gradlessh.tasks.exec.RemoteExecCommandString
+import xyz.dussim.gradlessh.tasks.transfer.RemoteDownloadCommandFile
+import xyz.dussim.gradlessh.tasks.transfer.RemoteFileCommand
+import xyz.dussim.gradlessh.tasks.transfer.RemoteFileCommandCollection
+import xyz.dussim.gradlessh.tasks.transfer.RemoteUploadCommandFile
+import xyz.dussim.gradlessh.tasks.transfer.RemoteUploadCommandString
 
 internal class SshPlugin : Plugin<Project> {
     override fun apply(target: Project): Unit =
         with(target) {
-            extensions.add(
-                publicType = RemoteContainer::class,
+            val remotes =
+                objects.polymorphicDomainObjectContainer(Remote::class.java).apply {
+                    registerFactory(PublicKeyAuthenticatedRemote::class.java) { name ->
+                        objects.newInstance<PublicKeyAuthenticatedRemoteImpl>(name).apply {
+                            port.convention(22)
+                            connectionTimeout.convention(10_000)
+                            readTimeout.convention(30_000)
+                        }
+                    }
+                    registerFactory(PasswordAuthenticatedRemote::class.java) { name ->
+                        objects.newInstance<PasswordAuthenticatedRemoteImpl>(name).apply {
+                            port.convention(22)
+                            connectionTimeout.convention(10_000)
+                            readTimeout.convention(30_000)
+                        }
+                    }
+                    registerFactory(RemoteCollection::class.java) { name ->
+                        objects.newInstance<RemoteCollectionImpl>(
+                            name,
+                            objects.namedDomainObjectSet(Remote::class.java),
+                        )
+                    }
+                }
+            val remoteExecCommands =
+                objects.polymorphicDomainObjectContainer(RemoteExecCommand::class.java).apply {
+                    registerFactory(RemoteExecCommandString::class.java) { name ->
+                        objects.newInstance<RemoteExecCommandStringImpl>(name)
+                    }
+                    registerFactory(RemoteExecCommandCollection::class.java) { name ->
+                        objects.newInstance<RemoteExecCommandCollectionImpl>(
+                            name,
+                            objects.namedDomainObjectSet(RemoteExecCommand::class.java),
+                        )
+                    }
+                }
+            val remoteFileCommands =
+                objects.polymorphicDomainObjectContainer(RemoteFileCommand::class.java).apply {
+                    registerFactory(RemoteUploadCommandString::class.java) { name ->
+                        objects.newInstance<RemoteUploadCommandStringImpl>(name)
+                    }
+                    registerFactory(RemoteUploadCommandFile::class.java) { name ->
+                        objects.newInstance<RemoteUploadCommandFileImpl>(name)
+                    }
+                    registerFactory(RemoteDownloadCommandFile::class.java) { name ->
+                        objects.newInstance<RemoteDownloadCommandFileImpl>(name)
+                    }
+                    registerFactory(RemoteFileCommandCollection::class.java) { name ->
+                        objects.newInstance<RemoteFileCommandCollectionImpl>(
+                            name,
+                            objects.namedDomainObjectSet(RemoteFileCommand::class.java),
+                        )
+                    }
+                }
+
+            extensions.add<ExtensiblePolymorphicDomainObjectContainer<Remote>>(
                 name = "remotes",
-                extension = objects.newInstance(),
+                extension = remotes,
             )
-            extensions.add(
-                publicType = RemoteExecCommandContainer::class,
+            extensions.add<ExtensiblePolymorphicDomainObjectContainer<RemoteExecCommand>>(
                 name = "remoteExecCommands",
-                extension = objects.newInstance(),
+                extension = remoteExecCommands,
             )
-            extensions.add(
-                publicType = RemoteFileCommandContainer::class,
+            extensions.add<ExtensiblePolymorphicDomainObjectContainer<RemoteFileCommand>>(
                 name = "remoteFileCommands",
-                extension = objects.newInstance(),
+                extension = remoteFileCommands,
             )
         }
 }

@@ -21,7 +21,7 @@ It uses the [sshj](https://github.com/hierynomus/sshj) library to execute the co
 
 ## Compatibility and requirements
 
-- Plugin 0.0.4 requires:
+- Plugin 0.0.5 requires:
   - Gradle 9.x (minimum 9.0)
   - Java 17+
   - Kotlin 2.2.0+ (for Kotlin DSL build scripts)
@@ -49,61 +49,52 @@ plugins {
 
 ```kotlin
 // build.gradle.kts
-remotes {
-    val firstRemote by publicKeyAuthenticated {
-        host = "first-remote-host"
-        user = "first-remote-username"
-        // optionally, defaults to 22
-        port = 40
-    }
-
-    val secondRemote by passwordAuthenticated {
-        host = "second-remote-host"
-        user = "second-remote-username"
-        password = providers.environmentVariable("PASSWORD").get()
-    }
-
-    val bothRemotes by remoteCollection(firstRemote, secondRemote)
+val firstRemote = remotes.publicKeyAuthenticated("firstRemote") {
+    host.set("first-remote-host")
+    user.set("first-remote-username")
+    // optionally, defaults to 22
+    port.set(40)
 }
+
+val secondRemote = remotes.passwordAuthenticated("secondRemote") {
+    host.set("second-remote-host")
+    user.set("second-remote-username")
+    password.set(providers.environmentVariable("PASSWORD"))
+}
+
+val bothRemotes = remotes.remoteCollection("bothRemotes", firstRemote, secondRemote)
 ```
 
 ### Configure remote executed commands
 
 ```kotlin
 // build.gradle.kts
-remoteExecCommands {
-    val listFiles by command {
-        command = "ls"
-    }
-
-    val helloWorld by command {
-        command = "echo Hello, World!"
-    }
-
-    val bothCommands by commandCollection(listFiles, helloWorld)
+val listFiles = remoteExecCommands.command("listFiles") {
+    commands.add("ls")
 }
+
+val helloWorld = remoteExecCommands.command("helloWorld") {
+    commands.add("echo Hello, World!")
+}
+
+val bothCommands = remoteExecCommands.commandCollection("bothCommands", listFiles, helloWorld)
 ```
 
 ### Configure remote upload/download commands
 
 ```kotlin
 // build.gradle.kts
-remoteFileCommands {
-    val downloadFile by downloadFileContent {
-        remotePath = "directory/file"
-        localFile = layout.projectDirectory.file("data/downloaded.txt").asFile
-    }
-
-    val upload by uploadFileContent {
-        localFile = layout.projectDirectory.file("data/payload.txt").asFile
-        remotePath = ""
-    }
-
-    val transfers by fileCommandCollection(
-        upload,
-        downloadFile,
-    )
+val downloadFile = remoteFileCommands.downloadFileContent("downloadFile") {
+    remotePath.set("directory/file")
+    localFile.set(layout.projectDirectory.file("data/downloaded.txt").asFile)
 }
+
+val upload = remoteFileCommands.uploadFileContent("upload") {
+    localFile.set(layout.projectDirectory.file("data/payload.txt").asFile)
+    remotePath.set("")
+}
+
+val transfers = remoteFileCommands.fileCommandCollection("transfers", upload, downloadFile)
 ```
 
 ### Configure tasks
@@ -134,7 +125,8 @@ For people not familiar with Gradle's Kotlin DSL, here are some examples:
 // build.gradle.kts
 
 // top level declaration, this object is lazily created and configured
-val bothCommands by remoteExecCommands.commandCollection(
+val bothCommands = remoteExecCommands.commandCollection(
+    "bothCommands",
     remoteExecCommands.named("listFiles"),
     remoteExecCommands.named("helloWorld")
 )
@@ -142,17 +134,17 @@ val bothCommands by remoteExecCommands.commandCollection(
 // similar to the above, but for remotes, 
 // all those remotes will be lazily created and configured
 
-val remote1 by remotes.publicKeyAuthenticated {
-    host = "host1"
-    user = "user1"
+val remote1 = remotes.publicKeyAuthenticated("remote1") {
+    host.set("host1")
+    user.set("user1")
 }
 
-val remote2 by remotes.publicKeyAuthenticated {
-    host = "host2"
-    user = "user2"
+val remote2 = remotes.publicKeyAuthenticated("remote2") {
+    host.set("host2")
+    user.set("user2")
 }
 
-val bothRemotes by remotes.remoteCollection(remote1, remote2)
+val bothRemotes = remotes.remoteCollection("bothRemotes", remote1, remote2)
 
 // those top level declarations can be used in tasks configuration
 
@@ -197,6 +189,33 @@ second-remote-username@second-remote-host:22|> config.json
 
 ## Upgrade guide
 
+- Upgrading to 0.0.5 (breaking):
+  - **Why this changed:** the previous `RemoteContainer`, `RemoteExecCommandContainer`, and `RemoteFileCommandContainer`
+    types were custom containers that exposed convenience *registering* DSL methods (such as `publicKeyAuthenticated`,
+    `command`, `uploadFileContent`, etc.). Those registering extensions relied on Gradle container registration APIs
+    that Gradle deprecated and scheduled for removal in a future release. To stay compatible with Gradle 9.x and to
+    avoid the deprecation warnings, the plugin no longer ships its own containers with these registering extensions.
+  - **What changed:** `RemoteContainer`, `RemoteExecCommandContainer`, and `RemoteFileCommandContainer` were removed.
+    The `remotes`, `remoteExecCommands`, and `remoteFileCommands` extensions are now plain, unmodified
+    `ExtensiblePolymorphicDomainObjectContainer`s provided directly by Gradle.
+  - **Helper methods moved:** the convenience methods that used to live on the custom containers are now top-level Kotlin
+    extension functions (declared in the `org.gradle.kotlin.dsl` package, so they are available implicitly in
+    `build.gradle.kts`). They now require an explicit name argument, e.g. `remotes.publicKeyAuthenticated("app") { ... }`
+    instead of relying on a name inferred by the container.
+  - **How to migrate:**
+    - Remove any explicit references to the removed types (`RemoteContainer`, `RemoteExecCommandContainer`,
+      `RemoteFileCommandContainer`) from your build scripts and imports. You rarely referenced them directly, but if you
+      did (for example when passing them around), switch to `ExtensiblePolymorphicDomainObjectContainer<Remote>`,
+      `ExtensiblePolymorphicDomainObjectContainer<RemoteExecCommand>`, and
+      `ExtensiblePolymorphicDomainObjectContainer<RemoteFileCommand>` respectively.
+    - Make sure every helper call passes an explicit name as its first argument, e.g.
+      `remotes.publicKeyAuthenticated("firstRemote") { ... }`, `remoteExecCommands.command("listFiles") { ... }`,
+      `remoteFileCommands.uploadFileContent("upload") { ... }`.
+    - The available helper functions are unchanged in behavior: `publicKeyAuthenticated`, `passwordAuthenticated`,
+      `remoteCollection`, `command`, `commandCollection`, `uploadStringContent`, `uploadFileContent`,
+      `downloadFileContent`, and `fileCommandCollection`.
+    - No behavioral change is expected at runtime; this is purely an API/structural change driven by Gradle's own
+      deprecations.
 - Upgrading to 0.0.4 (breaking):
   - Requires Gradle 9.x, Java 17+, Kotlin 2.2.0+.
   - Remove usages of deprecated APIs previously scheduled for removal; use the container DSL helpers shown in the Usage section (publicKeyAuthenticated, passwordAuthenticated, command, commandCollection, fileCommandCollection, etc.).
@@ -214,7 +233,18 @@ second-remote-username@second-remote-host:22|> config.json
 
 ### ***gradle-ssh 0.0.5***
 
-- Libraries updated
+- **BREAKING CHANGES**:
+    - Removed `RemoteContainer`, `RemoteExecCommandContainer`, and `RemoteFileCommandContainer`. The `remotes`,
+      `remoteExecCommands`, and `remoteFileCommands` extensions are now plain
+      `ExtensiblePolymorphicDomainObjectContainer`s.
+    - Helper APIs are now top-level extension functions that require an explicit name,
+      e.g. `remotes.publicKeyAuthenticated("app") { ... }`.
+    - This was driven by deprecations in Gradle itself: the custom containers' *registering* DSL extensions relied on
+      Gradle container registration APIs that were deprecated and scheduled for removal, so the plugin switched to plain
+      Gradle-provided containers.
+- Dependencies updates:
+    - Gradle wrapper updated to `9.6.1`
+- See the [Upgrade guide](#upgrade-guide) for migration details.
 
 ### ***gradle-ssh 0.0.4***
 
@@ -238,7 +268,7 @@ second-remote-username@second-remote-host:22|> config.json
 
 - **BREAKING CHANGES**:
     - all existing models properties are not `var` anymore but `Property<*>`
-    - some of the methods in `RemoteContainer` and `RemoteExecCommandContainer` were marked as `@Deprecated` and will be
+    - some methods in `RemoteContainer` and `RemoteExecCommandContainer` were marked as `@Deprecated` and will be
       removed in `0.0.3`.
       If you need that functionality it is not gone, it will just not be as nice to use, refer to
       `PolymorphicDomainObjectContainer` docs.

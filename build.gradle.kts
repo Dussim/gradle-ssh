@@ -3,12 +3,12 @@ import org.jetbrains.kotlin.gradle.dsl.KotlinVersion
 
 plugins {
     `kotlin-dsl`
-    id("com.gradle.plugin-publish").version("1.3.1")
+    id("com.gradle.plugin-publish").version("2.1.1")
     id("com.github.hierynomus.license").version("0.16.1")
     id("ru.vyarus.github-info").version("2.0.0")
     id("org.jmailen.kotlinter").version("5.3.0")
-    id("org.jetbrains.dokka").version("2.1.0")
-    id("com.github.ben-manes.versions").version("0.53.0")
+    id("org.jetbrains.dokka").version("2.2.0")
+    id("com.github.ben-manes.versions").version("0.54.0")
 }
 
 dependencies {
@@ -16,7 +16,7 @@ dependencies {
     implementation("com.jcraft:jzlib:1.1.3")
 
     testImplementation(gradleTestKit())
-    testImplementation(platform("org.junit:junit-bom:6.0.1"))
+    testImplementation(platform("org.junit:junit-bom:6.1.1"))
     testImplementation("org.junit.jupiter:junit-jupiter")
     testImplementation(kotlin("test"))
 }

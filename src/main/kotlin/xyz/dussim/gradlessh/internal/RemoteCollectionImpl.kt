@@ -18,6 +18,7 @@ package xyz.dussim.gradlessh.internal
 import org.gradle.api.NamedDomainObjectSet
 import xyz.dussim.gradlessh.remote.Remote
 import xyz.dussim.gradlessh.remote.RemoteCollection
+import java.util.function.IntFunction
 import javax.inject.Inject
 
 internal abstract class RemoteCollectionImpl
@@ -28,4 +29,13 @@ internal abstract class RemoteCollectionImpl
     ) : RemoteCollection,
         NamedDomainObjectSet<Remote> by remotes {
         override fun getName(): String = name
+
+        @Suppress("UnstableApiUsage")
+        override fun disallowChanges() {
+            remotes.disallowChanges()
+        }
+
+        @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN", "OVERRIDE_DEPRECATION")
+        override fun <T> toArray(generator: IntFunction<Array<out T?>?>): Array<out T?>? =
+            (remotes as java.util.Collection<*>).toArray(generator)
     }

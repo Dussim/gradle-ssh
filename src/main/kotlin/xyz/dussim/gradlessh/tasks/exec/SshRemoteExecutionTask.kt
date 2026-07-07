@@ -30,7 +30,6 @@ import xyz.dussim.gradlessh.remote.PublicKeyAuthenticatedRemote
 import xyz.dussim.gradlessh.remote.Remote
 import xyz.dussim.gradlessh.remote.RemoteAddress
 import xyz.dussim.gradlessh.remote.RemoteCollection
-import xyz.dussim.gradlessh.remote.RemoteContainer
 
 /**
  * Represents a task that executes a command on a remote machine via SSH.
@@ -51,7 +50,6 @@ abstract class SshRemoteExecutionTask : DefaultTask() {
      * @see PublicKeyAuthenticatedRemote
      * @see PasswordAuthenticatedRemote
      * @see RemoteCollection
-     * @see RemoteContainer
      */
     @get:Input
     abstract val remote: Property<Remote>
@@ -69,7 +67,6 @@ abstract class SshRemoteExecutionTask : DefaultTask() {
      * @see RemoteExecCommand
      * @see RemoteExecCommandString
      * @see RemoteExecCommandCollection
-     * @see RemoteExecCommandContainer
      */
     @get:Input
     abstract val command: Property<RemoteExecCommand>

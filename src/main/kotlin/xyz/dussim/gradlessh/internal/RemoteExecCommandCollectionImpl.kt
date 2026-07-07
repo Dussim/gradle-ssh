@@ -18,6 +18,7 @@ package xyz.dussim.gradlessh.internal
 import org.gradle.api.NamedDomainObjectSet
 import xyz.dussim.gradlessh.tasks.exec.RemoteExecCommand
 import xyz.dussim.gradlessh.tasks.exec.RemoteExecCommandCollection
+import java.util.function.IntFunction
 import javax.inject.Inject
 
 internal abstract class RemoteExecCommandCollectionImpl
@@ -28,4 +29,13 @@ internal abstract class RemoteExecCommandCollectionImpl
     ) : RemoteExecCommandCollection,
         NamedDomainObjectSet<RemoteExecCommand> by commands {
         override fun getName(): String = name
+
+        @Suppress("UnstableApiUsage")
+        override fun disallowChanges() {
+            commands.disallowChanges()
+        }
+
+        @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN", "OVERRIDE_DEPRECATION")
+        override fun <T> toArray(generator: IntFunction<Array<out T?>?>): Array<out T?>? =
+            (commands as java.util.Collection<*>).toArray(generator)
     }

@@ -18,6 +18,7 @@ package xyz.dussim.gradlessh.internal
 import org.gradle.api.NamedDomainObjectSet
 import xyz.dussim.gradlessh.tasks.transfer.RemoteFileCommand
 import xyz.dussim.gradlessh.tasks.transfer.RemoteFileCommandCollection
+import java.util.function.IntFunction
 import javax.inject.Inject
 
 internal abstract class RemoteFileCommandCollectionImpl
@@ -28,4 +29,13 @@ internal abstract class RemoteFileCommandCollectionImpl
     ) : RemoteFileCommandCollection,
         NamedDomainObjectSet<RemoteFileCommand> by uploads {
         override fun getName(): String = name
+
+        @Suppress("UnstableApiUsage")
+        override fun disallowChanges() {
+            uploads.disallowChanges()
+        }
+
+        @Suppress("PLATFORM_CLASS_MAPPED_TO_KOTLIN", "OVERRIDE_DEPRECATION")
+        override fun <T> toArray(generator: IntFunction<Array<out T?>?>): Array<out T?>? =
+            (uploads as java.util.Collection<*>).toArray(generator)
     }

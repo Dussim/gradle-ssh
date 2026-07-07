@@ -50,12 +50,12 @@ class SshPluginFunctionalTest {
             plugins { id("xyz.dussim.gradle-ssh") }
 
             // verify the extensions exist and are accessible
+            check(extensions.findByName("remotes") != null) { "remotes extension missing" }
+            check(extensions.findByName("remoteExecCommands") != null) { "remoteExecCommands extension missing" }
+            check(extensions.findByName("remoteFileCommands") != null) { "remoteFileCommands extension missing" }
+
             tasks.register("verifyExtensions") {
                 doLast {
-                    val exts = project.extensions
-                    check(exts.getByName("remotes") != null) { "remotes extension missing" }
-                    check(exts.getByName("remoteExecCommands") != null) { "remoteExecCommands extension missing" }
-                    check(exts.getByName("remoteFileCommands") != null) { "remoteFileCommands extension missing" }
                     println("[TEST] EXTENSIONS_OK")
                 }
             }
@@ -93,20 +93,17 @@ class SshPluginFunctionalTest {
         writeFile(
             File(tempDir, "build.gradle.kts"),
             """
-            import xyz.dussim.gradlessh.remote.PublicKeyAuthenticatedRemote
-            import xyz.dussim.gradlessh.tasks.exec.RemoteExecCommandString
-
             plugins { id("xyz.dussim.gradle-ssh") }
 
             // Define one remote via DSL helper and ensure no exceptions in configuration
-            val app by remotes.publicKeyAuthenticated {
+            val app = remotes.publicKeyAuthenticated("app") {
                 host.set("localhost")
                 port.set(22)
                 user.set("tester")
             }
 
             // Define one exec command via DSL helper (no execution)
-            val echoCmd by remoteExecCommands.command {
+            val echoCmd = remoteExecCommands.command("echoCmd") {
                 commands.add("echo hello")
             }
 
@@ -148,12 +145,10 @@ class SshPluginFunctionalTest {
 
         writeFile(
             File(tempDir, "build.gradle.kts"),
-            """
-            import xyz.dussim.gradlessh.remote.PublicKeyAuthenticatedRemote
-
+            $$"""
             plugins { id("xyz.dussim.gradle-ssh") }
 
-            val r by remotes.publicKeyAuthenticated {
+            val r = remotes.publicKeyAuthenticated("r") {
                 host.set("example.com")
                 user.set("alice")
                 // not setting port/connectionTimeout/readTimeout to test defaults
@@ -161,11 +156,11 @@ class SshPluginFunctionalTest {
 
             tasks.register("verifyRemoteDefaults") {
                 doLast {
-                    val remote = remotes.named("r").get() as PublicKeyAuthenticatedRemote
+                    val remote = r.get()
                     check(remote.port.get() == 22) { "default port not 22" }
                     check(remote.connectionTimeout.get() == 10_000) { "default connectionTimeout not 10000" }
                     check(remote.readTimeout.get() == 30_000) { "default readTimeout not 30000" }
-                    check(remote.address == "${'$'}{remote.user.get()}@${'$'}{remote.host.get()}:${'$'}{remote.port.get()}") { "address formatting mismatch" }
+                    check(remote.address == "${remote.user.get()}@${remote.host.get()}:${remote.port.get()}") { "address formatting mismatch" }
                     println("[TEST] REMOTE_DEFAULTS_OK")
                 }
             }
@@ -199,28 +194,26 @@ class SshPluginFunctionalTest {
 
         writeFile(
             File(tempDir, "build.gradle.kts"),
-            """
-            import xyz.dussim.gradlessh.remote.Remote
-
+            $$"""
             plugins { id("xyz.dussim.gradle-ssh") }
 
-            val app by remotes.publicKeyAuthenticated {
+            val app = remotes.publicKeyAuthenticated("app") {
                 host.set("h1")
                 user.set("u1")
             }
-            val db by remotes.passwordAuthenticated {
+            val db = remotes.passwordAuthenticated("db") {
                 host.set("h2")
                 user.set("u2")
                 password.set("secret")
             }
 
-            val cluster by remotes.remoteCollection(app, db)
+            val cluster = remotes.remoteCollection("cluster", app, db)
 
             tasks.register("verifyRemoteCollection") {
                 doLast {
                     val names = mutableSetOf<String>()
                     cluster.get().forEach { names += it.name }
-                    check(names.containsAll(listOf("app", "db"))) { "collection does not contain expected remotes: ${'$'}names" }
+                    check(names.containsAll(listOf("app", "db"))) { "collection does not contain expected remotes: $names" }
                     println("[TEST] REMOTE_COLLECTION_OK")
                 }
             }
@@ -254,22 +247,19 @@ class SshPluginFunctionalTest {
 
         writeFile(
             File(tempDir, "build.gradle.kts"),
-            """
-            import xyz.dussim.gradlessh.tasks.exec.RemoteExecCommand
-            import xyz.dussim.gradlessh.tasks.exec.RemoteExecCommandString
-
+            $$"""
             plugins { id("xyz.dussim.gradle-ssh") }
 
-            val echo1 by remoteExecCommands.command { commands.add("echo one") }
-            val echo2 by remoteExecCommands.command { commands.add("echo two"); commands.add("echo two again") }
-            val all by remoteExecCommands.commandCollection(echo1, echo2)
+            val echo1 = remoteExecCommands.command("echo1") { commands.add("echo one") }
+            val echo2 = remoteExecCommands.command("echo2") { commands.add("echo two"); commands.add("echo two again") }
+            val all = remoteExecCommands.commandCollection("all", echo1, echo2)
 
             tasks.register("verifyExecCollection") {
                 doLast {
                     val coll = all.get()
                     val names = mutableSetOf<String>()
                     coll.forEach { names += it.name }
-                    check(names.containsAll(listOf("echo1", "echo2"))) { "expected command names not present: ${'$'}names" }
+                    check(names.containsAll(listOf("echo1", "echo2"))) { "expected command names not present: $names" }
                     val c1 = echo1.get()
                     val c2 = echo2.get()
                     check(c1.commands.get().size == 1) { "echo1 commands size mismatch" }
@@ -308,28 +298,23 @@ class SshPluginFunctionalTest {
         writeFile(
             File(tempDir, "build.gradle.kts"),
             """
-            import xyz.dussim.gradlessh.tasks.transfer.RemoteFileCommand
-            import xyz.dussim.gradlessh.tasks.transfer.RemoteUploadCommandString
-            import xyz.dussim.gradlessh.tasks.transfer.RemoteUploadCommandFile
-            import xyz.dussim.gradlessh.tasks.transfer.RemoteDownloadCommandFile
-
             plugins { id("xyz.dussim.gradle-ssh") }
 
-            val upStr by remoteFileCommands.uploadStringContent {
+            val upStr = remoteFileCommands.uploadStringContent("upStr") {
                 remotePath.set("/tmp/hello.txt")
                 textContent.set("HELLO")
                 fileName.set("hello.txt")
             }
-            val upFile by remoteFileCommands.uploadFileContent {
+            val upFile = remoteFileCommands.uploadFileContent("upFile") {
                 remotePath.set("/tmp/from-file.bin")
                 localFile.set(file("local.bin"))
             }
-            val downFile by remoteFileCommands.downloadFileContent {
+            val downFile = remoteFileCommands.downloadFileContent("downFile") {
                 remotePath.set("/var/log/app.log")
                 localFile.set(file("app.log"))
             }
 
-            val allFiles by remoteFileCommands.fileCommandCollection(upStr, upFile, downFile)
+            val allFiles = remoteFileCommands.fileCommandCollection("allFiles", upStr, upFile, downFile)
 
             tasks.register("verifyFileCommands") {
                 doLast {
@@ -387,12 +372,12 @@ class SshPluginFunctionalTest {
             plugins { id("xyz.dussim.gradle-ssh") }
 
             // Define a remote and a command via the plugin DSL
-            val app by remotes.publicKeyAuthenticated {
+            val app = remotes.publicKeyAuthenticated("app") {
                 host.set("localhost")
                 port.set(22)
                 user.set("tester")
             }
-            val echo by remoteExecCommands.command {
+            val echo = remoteExecCommands.command("echo") {
                 commands.add("echo hello from plugin task")
             }
 
@@ -481,13 +466,13 @@ class SshPluginFunctionalTest {
             plugins { id("xyz.dussim.gradle-ssh") }
 
             // Define a remote and a file command via the plugin DSL
-            val app by remotes.passwordAuthenticated {
+            val app = remotes.passwordAuthenticated("app") {
                 host.set("localhost")
                 port.set(22)
                 user.set("tester")
                 password.set("secret")
             }
-            val up by remoteFileCommands.uploadStringContent {
+            val up = remoteFileCommands.uploadStringContent("up") {
                 remotePath.set("/tmp/hello.txt")
                 textContent.set("HELLO")
                 fileName.set("hello.txt")
