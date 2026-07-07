@@ -21,7 +21,7 @@ It uses the [sshj](https://github.com/hierynomus/sshj) library to execute the co
 
 ## Compatibility and requirements
 
-- Plugin 0.0.5 requires:
+- Plugin 0.0.6 requires:
   - Gradle 9.x (minimum 9.0)
   - Java 17+
   - Kotlin 2.2.0+ (for Kotlin DSL build scripts)
@@ -41,7 +41,7 @@ It uses the [sshj](https://github.com/hierynomus/sshj) library to execute the co
 ```kotlin
 // build.gradle.kts
 plugins {
-    id("xyz.dussim.gradle-ssh").version("0.0.5")
+    id("xyz.dussim.gradle-ssh").version("0.0.6")
 }
 ```
 
@@ -189,7 +189,7 @@ second-remote-username@second-remote-host:22|> config.json
 
 ## Upgrade guide
 
-- Upgrading to 0.0.5 (breaking):
+- Upgrading to 0.0.6 (breaking):
   - **Why this changed:** the previous `RemoteContainer`, `RemoteExecCommandContainer`, and `RemoteFileCommandContainer`
     types were custom containers that exposed convenience *registering* DSL methods (such as `publicKeyAuthenticated`,
     `command`, `uploadFileContent`, etc.). Those registering extensions relied on Gradle container registration APIs
@@ -231,7 +231,7 @@ second-remote-username@second-remote-host:22|> config.json
 
 ## Changelog
 
-### ***gradle-ssh 0.0.5***
+### ***gradle-ssh 0.0.6***
 
 - **BREAKING CHANGES**:
     - Removed `RemoteContainer`, `RemoteExecCommandContainer`, and `RemoteFileCommandContainer`. The `remotes`,
@@ -245,6 +245,10 @@ second-remote-username@second-remote-host:22|> config.json
 - Dependencies updates:
     - Gradle wrapper updated to `9.6.1`
 - See the [Upgrade guide](#upgrade-guide) for migration details.
+
+### ***gradle-ssh 0.0.5***
+
+- Libraries updated
 
 ### ***gradle-ssh 0.0.4***
 
